@@ -1,0 +1,53 @@
+import React from 'react';
+import { Pressable, StyleSheet, Text } from 'react-native';
+
+import { useTheme } from '../../theme';
+
+interface CategoryChipProps {
+  label: string;
+  isActive?: boolean;
+  onPress?: () => void;
+}
+
+export function CategoryChip({
+  label,
+  isActive = false,
+  onPress,
+}: CategoryChipProps) {
+  const { colors, spacing, radius, typography } = useTheme();
+
+  return (
+    <Pressable
+      onPress={onPress}
+      style={[
+        styles.chip,
+        {
+          backgroundColor: isActive ? colors.accent : colors.surfaceElevated,
+          borderRadius: radius.full,
+          paddingVertical: spacing.sm,
+          paddingHorizontal: spacing.lg,
+          borderWidth: 1,
+          borderColor: isActive ? colors.accent : colors.border,
+        },
+      ]}
+    >
+      <Text
+        style={[
+          typography.captionMedium,
+          {
+            color: isActive ? '#FFFFFF' : colors.textSecondary,
+          },
+        ]}
+        numberOfLines={1}
+      >
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
+const styles = StyleSheet.create({
+  chip: {
+    alignSelf: 'flex-start',
+  },
+});

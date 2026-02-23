@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./node_modules/.bin/tsc:*)",
+      "Bash(npx expo export:*)",
+      "Bash(sips:*)",
+      "Bash(npx expo:*)",
+      "Bash(npx expo config:*)",
+      "Bash(md5:*)",
+      "Bash(git init:*)",
+      "Bash(git remote add:*)"
+    ],
+    "additionalDirectories": [
+      "/private/tmp/joq-test-export",
+      "/Users/zulbearijahjanur/joq-mobile/joq-news/.git"
+    ]
+  }
+}
