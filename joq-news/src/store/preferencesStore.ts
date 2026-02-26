@@ -28,6 +28,7 @@ interface PreferencesState {
   // Notifications
   notificationsEnabled: boolean;
   notificationCategories: Record<NotificationCategory, boolean>;
+  pushToken: string | null;
 
   // Search
   recentSearches: string[];
@@ -39,6 +40,7 @@ interface PreferencesState {
   setHapticFeedback: (enabled: boolean) => void;
   setNotificationsEnabled: (enabled: boolean) => void;
   toggleNotificationCategory: (category: NotificationCategory) => void;
+  setPushToken: (token: string | null) => void;
   addRecentSearch: (query: string) => void;
   removeRecentSearch: (query: string) => void;
   clearRecentSearches: () => void;
@@ -61,6 +63,7 @@ export const usePreferencesStore = create<PreferencesState>()(
         argetim: false,
         importantOnly: false,
       },
+      pushToken: null,
       recentSearches: [],
 
       setThemeMode: (mode) => set({ themeMode: mode }),
@@ -70,6 +73,8 @@ export const usePreferencesStore = create<PreferencesState>()(
 
       setNotificationsEnabled: (enabled) =>
         set({ notificationsEnabled: enabled }),
+
+      setPushToken: (token) => set({ pushToken: token }),
 
       toggleNotificationCategory: (category) =>
         set((state) => ({

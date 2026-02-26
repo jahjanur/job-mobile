@@ -21,9 +21,13 @@ import { Feather } from '@expo/vector-icons';
 import type { ComponentProps } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useRouter } from 'expo-router';
+
 import { AppLogo } from '../../src/components/ui/AppLogo';
 import { Config } from '../../src/constants/config';
+import { useAuthStore } from '../../src/store/authStore';
 import { useBookmarksStore } from '../../src/store/bookmarksStore';
+import { useSubscriptionStore } from '../../src/store/subscriptionStore';
 import {
   type NotificationCategory,
   usePreferencesStore,
@@ -295,6 +299,15 @@ function InfoRow({
 export default function SettingsScreen() {
   const { colors, spacing, typography, radius, dark } = useTheme();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+
+  const authUser = useAuthStore((s) => s.user);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const authLogout = useAuthStore((s) => s.logout);
+
+  const subscriptionEmail = useSubscriptionStore((s) => s.email);
+  const isSubscribed = useSubscriptionStore((s) => s.isSubscribed);
+  const unsubscribe = useSubscriptionStore((s) => s.unsubscribe);
 
   const themeMode = usePreferencesStore((s) => s.themeMode);
   const fontSize = usePreferencesStore((s) => s.fontSize);
@@ -387,6 +400,27 @@ export default function SettingsScreen() {
       </Text>
 
       {/* ═══════════════════════════════════════ */}
+      {/*  0. LLOGARIA (Account)                   */}
+      {/* ═══════════════════════════════════════ */}
+      <SectionLabel text="LLOGARIA" />
+      <Card>
+        {isAuthenticated && authUser ? (
+          <>
+            <InfoRow label="Emri" value={authUser.displayName ?? 'Pa emër'} icon="user" />
+            <InfoRow label="Email" value={authUser.email ?? ''} icon="mail" />
+            <LinkRow label="Dil nga llogaria" icon="log-out" onPress={authLogout} isLast />
+          </>
+        ) : (
+          <LinkRow
+            label="Hyr / Regjistrohu"
+            icon="log-in"
+            onPress={() => router.push('/(auth)/login')}
+            isLast
+          />
+        )}
+      </Card>
+
+      {/* ═══════════════════════════════════════ */}
       {/*  1. PAMJA (Appearance)                  */}
       {/* ═══════════════════════════════════════ */}
       <SectionLabel text="PAMJA" />
@@ -431,7 +465,22 @@ export default function SettingsScreen() {
         <SettingRow label="Njoftimet Push" icon="bell">
           <Switch
             value={notificationsEnabled}
-            onValueChange={setNotificationsEnabled}
+            onValueChange={async (enabled) => {
+              if (enabled) {
+                const { registerForPushNotifications } = await import(
+                  '../../src/services/notifications'
+                );
+                const token = await registerForPushNotifications();
+                if (!token) {
+                  Alert.alert(
+                    'Lejet',
+                    'Ju duhet të lejoni njoftimet në cilësimet e pajisjes.',
+                  );
+                  return;
+                }
+              }
+              setNotificationsEnabled(enabled);
+            }}
             trackColor={switchColors}
             thumbColor="#FFFFFF"
           />
@@ -452,6 +501,65 @@ export default function SettingsScreen() {
               />
             </SettingRow>
           ))}
+      </Card>
+
+      {/* ═══════════════════════════════════════ */}
+      {/*  2b. ABONIMI ME EMAIL                    */}
+      {/* ═══════════════════════════════════════ */}
+      <SectionLabel text="ABONIMI ME EMAIL" />
+      <Card>
+        {isSubscribed && subscriptionEmail ? (
+          <>
+            <InfoRow label="Email" value={subscriptionEmail} icon="mail" />
+            <LinkRow
+              label="Anullo abonimin"
+              icon="x-circle"
+              onPress={() => {
+                Alert.alert(
+                  'Anullo abonimin',
+                  'Jeni i sigurt që dëshironi të anuloni abonimin me email?',
+                  [
+                    { text: 'Jo', style: 'cancel' },
+                    { text: 'Po', onPress: unsubscribe },
+                  ],
+                );
+              }}
+              isLast
+            />
+          </>
+        ) : (
+          <LinkRow
+            label="Abonohu për lajme me email"
+            icon="mail"
+            onPress={() => {
+              Alert.prompt?.(
+                'Abonohu me email',
+                'Shkruani email-in tuaj për të marrë lajmet më të fundit.',
+                [
+                  { text: 'Anulo', style: 'cancel' },
+                  {
+                    text: 'Abonohu',
+                    onPress: (emailInput: string | undefined) => {
+                      if (emailInput?.trim()) {
+                        const { subscribe } = useSubscriptionStore.getState();
+                        subscribe(emailInput.trim(), []);
+                        Alert.alert('Sukses', 'U abonuat me sukses!');
+                      }
+                    },
+                  },
+                ],
+                'plain-text',
+                '',
+                'email-address',
+              ) ??
+                Alert.alert(
+                  'Abonohu',
+                  'Funksioni i abonimit do të jetë i disponueshëm së shpejti.',
+                );
+            }}
+            isLast
+          />
+        )}
       </Card>
 
       {/* ═══════════════════════════════════════ */}

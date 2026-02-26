@@ -15,10 +15,18 @@ import { FlashList } from '@shopify/flash-list';
 
 import type { AppPost } from '../../api/types';
 import { useTheme } from '../../theme';
+import { AdBanner } from '../ads/AdBanner';
 import { PostCard } from '../cards/PostCard';
 import { PostCardSkeleton } from '../loaders/SkeletonBox';
 import { EmptyState } from '../states/EmptyState';
 import { ErrorState } from '../states/ErrorState';
+
+/** Sentinel value inserted into the feed data to render an ad banner. */
+const AD_MARKER = '__AD__' as const;
+type FeedItem = AppPost | typeof AD_MARKER;
+
+/** Insert an ad marker after every N posts. */
+const AD_INTERVAL = 5;
 
 interface PostFeedProps {
   posts: AppPost[];
@@ -51,12 +59,38 @@ export function PostFeed({
 }: PostFeedProps) {
   const { colors, spacing } = useTheme();
 
+  /** Build a mixed array of posts and ad markers. */
+  const feedData: FeedItem[] = useMemo(() => {
+    const result: FeedItem[] = [];
+    posts.forEach((post, index) => {
+      result.push(post);
+      if ((index + 1) % AD_INTERVAL === 0) {
+        result.push(AD_MARKER);
+      }
+    });
+    return result;
+  }, [posts]);
+
   const renderItem = useCallback(
-    ({ item }: { item: AppPost }) => <PostCard post={item} />,
+    ({ item }: { item: FeedItem }) => {
+      if (item === AD_MARKER) {
+        return <AdBanner />;
+      }
+      return <PostCard post={item} />;
+    },
     [],
   );
 
-  const keyExtractor = useCallback((item: AppPost) => String(item.id), []);
+  const keyExtractor = useCallback(
+    (item: FeedItem, index: number) =>
+      item === AD_MARKER ? `ad-${index}` : String(item.id),
+    [],
+  );
+
+  const getItemType = useCallback(
+    (item: FeedItem) => (item === AD_MARKER ? 'ad' : 'post'),
+    [],
+  );
 
   const ListFooter = useMemo(() => {
     if (isFetchingNextPage) {
@@ -106,9 +140,10 @@ export function PostFeed({
 
   return (
     <FlashList
-      data={posts}
+      data={feedData}
       renderItem={renderItem}
       keyExtractor={keyExtractor}
+      getItemType={getItemType}
       ListHeaderComponent={ListHeaderComponent}
       ListFooterComponent={ListFooter}
       onEndReached={() => {

@@ -104,6 +104,7 @@ export interface AppPost {
   categoryIds: number[];
   categoryNames: string[];
   tagIds: number[];
+  viewCount: number;
   link: string;
 }
 

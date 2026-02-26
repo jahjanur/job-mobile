@@ -29,6 +29,28 @@ export function formatPostDate(isoDate: string): string {
 }
 
 /**
+ * Returns just the clock time in HH:mm format.
+ */
+export function formatPostTime(isoDate: string): string {
+  try {
+    return format(parseISO(isoDate), 'HH:mm');
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * Returns the relative date string with clock time appended.
+ * e.g. "2 orë më parë · 20:20" or "Dje · 14:30" or "18 Shk 2026 · 09:15"
+ */
+export function formatPostDateWithTime(isoDate: string): string {
+  const datePart = formatPostDate(isoDate);
+  const timePart = formatPostTime(isoDate);
+  if (!timePart) return datePart;
+  return `${datePart} · ${timePart}`;
+}
+
+/**
  * Returns a full formatted date for article detail in Albanian.
  */
 export function formatArticleDate(isoDate: string): string {

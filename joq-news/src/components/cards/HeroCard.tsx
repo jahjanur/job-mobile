@@ -13,7 +13,7 @@ import { useRouter } from 'expo-router';
 
 import type { AppPost } from '../../api/types';
 import { useTheme } from '../../theme';
-import { formatPostDate } from '../../utils/date';
+import { formatPostDateWithTime } from '../../utils/date';
 import { getImageSource } from '../../utils/image';
 import { estimateReadingTime, formatReadingTime } from '../../utils/reading';
 import { PressableScale } from '../ui/PressableScale';
@@ -138,7 +138,7 @@ export const HeroCard = memo(function HeroCard({ post }: HeroCardProps) {
               { color: 'rgba(255,255,255,0.5)' },
             ]}
           >
-            {formatPostDate(post.date)}
+            {formatPostDateWithTime(post.date)}
           </Text>
         </View>
       </View>

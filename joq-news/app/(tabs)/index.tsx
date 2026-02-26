@@ -22,32 +22,42 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { AppPost } from '../../src/api/types';
 import { MOCK_CATEGORIES } from '../../src/api/mockData';
+import { AdBanner } from '../../src/components/ads/AdBanner';
 import { CompactCard } from '../../src/components/cards/CompactCard';
 import { HeroCard } from '../../src/components/cards/HeroCard';
+import { CategorySpotlight } from '../../src/components/feed/CategorySpotlight';
 import { PostFeed } from '../../src/components/feed/PostFeed';
 import { HeroSkeleton, PostCardSkeleton } from '../../src/components/loaders/SkeletonBox';
 import { AppLogo } from '../../src/components/ui/AppLogo';
+import { CategoryBar } from '../../src/components/ui/CategoryBar';
 import { PressableScale } from '../../src/components/ui/PressableScale';
 import { usePosts } from '../../src/hooks/usePosts';
 import { useRefreshByUser } from '../../src/hooks/useRefreshByUser';
+import { useTrendingPosts } from '../../src/hooks/useTrendingPosts';
 import { useTheme } from '../../src/theme';
-import { formatPostDate, formatTodayAlbanian } from '../../src/utils/date';
+import { formatPostDateWithTime, formatTodayAlbanian } from '../../src/utils/date';
 import { getImageSource } from '../../src/utils/image';
 import { estimateReadingTime } from '../../src/utils/reading';
 
 type FeatherIcon = ComponentProps<typeof Feather>['name'];
 
 const CATEGORY_ICONS: Record<string, FeatherIcon> = {
-  ekonomi: 'trending-up',
-  politike: 'flag',
-  bote: 'globe',
+  'vec-e-jona': 'star',
+  lajme: 'radio',
   teknologji: 'cpu',
-  sport: 'activity',
-  kulture: 'book-open',
-  shendetesi: 'heart',
+  bota: 'globe',
   argetim: 'film',
-  opinione: 'message-circle',
-  edukim: 'book',
+  maqedoni: 'map',
+  sport: 'activity',
+  'persekutimi-ndaj-joq': 'shield',
+  kosova: 'flag',
+  sondazhe: 'bar-chart-2',
+  kuriozitete: 'help-circle',
+  thashetheme: 'message-circle',
+  udhetime: 'map-pin',
+  shendeti: 'heart',
+  'si-te': 'book-open',
+  live: 'video',
 };
 
 const PILL_COLORS = [
@@ -72,6 +82,7 @@ export default function HomeScreen() {
   } = usePosts();
 
   const { isRefreshing, onRefresh } = useRefreshByUser(refetch);
+  const { data: trendingData } = useTrendingPosts({ limit: 6 });
 
   const allPosts = useMemo(
     () => data?.pages.flatMap((p) => p.data) ?? [],
@@ -80,7 +91,7 @@ export default function HomeScreen() {
 
   // Split posts into visual sections
   const heroPost = allPosts[0];
-  const trendingPosts = allPosts.slice(1, 7);
+  const trendingPosts = trendingData ?? allPosts.slice(1, 7);
   const spotlightPost = allPosts[7];
   const gridPosts = allPosts.slice(3, 7);
   const feedPosts = allPosts.slice(8);
@@ -150,6 +161,20 @@ export default function HomeScreen() {
           </View>
         </View>
 
+        {/* ── Category quick bar ─────────────────────── */}
+        <CategoryBar
+          categories={MOCK_CATEGORIES}
+          selectedId={null}
+          onSelect={(catId) => {
+            if (catId !== null) {
+              const cat = MOCK_CATEGORIES.find((c) => c.id === catId);
+              router.push(
+                `/category/${catId}?name=${encodeURIComponent(cat?.name ?? '')}`,
+              );
+            }
+          }}
+        />
+
         {/* ── Hero story ─────────────────────────────── */}
         {heroPost && <HeroCard post={heroPost} />}
 
@@ -197,6 +222,9 @@ export default function HomeScreen() {
             </ScrollView>
           </>
         )}
+
+        {/* ── Home top banner ad ───────────────────── */}
+        <AdBanner />
 
         {/* ── Editor's Pick / Spotlight ──────────────── */}
         {spotlightPost && (
@@ -386,7 +414,7 @@ export default function HomeScreen() {
             paddingBottom: spacing.xs,
           }}
         >
-          {MOCK_CATEGORIES.slice(0, 8).map((cat, i) => {
+          {MOCK_CATEGORIES.map((cat, i) => {
             const color = PILL_COLORS[i % PILL_COLORS.length];
             const iconName = CATEGORY_ICONS[cat.slug] ?? 'hash';
             return (
@@ -651,7 +679,7 @@ export default function HomeScreen() {
                         },
                       ]}
                     >
-                      {formatPostDate(gridPosts[3].date)}
+                      {formatPostDateWithTime(gridPosts[3].date)}
                     </Text>
                   </View>
                 </View>
@@ -659,6 +687,11 @@ export default function HomeScreen() {
             </View>
           </>
         )}
+
+        {/* ── Dynamic category spotlights ────────────── */}
+        <CategorySpotlight categoryId={2} categoryName="Lajme" />
+        <CategorySpotlight categoryId={7} categoryName="Sport" />
+        <CategorySpotlight categoryId={3} categoryName="Teknologji" />
 
         {/* ── Divider + Latest section ───────────────── */}
         <View

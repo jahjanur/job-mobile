@@ -24,20 +24,22 @@ import { useTheme } from '../../src/theme';
 type FeatherIcon = ComponentProps<typeof Feather>['name'];
 
 const CATEGORY_ICONS: Record<string, FeatherIcon> = {
-  bote: 'globe',
-  politike: 'flag',
-  ekonomi: 'trending-up',
+  'vec-e-jona': 'star',
+  lajme: 'radio',
   teknologji: 'cpu',
-  shkence: 'zap',
-  shendetesi: 'heart',
-  sport: 'activity',
+  bota: 'globe',
   argetim: 'film',
-  kulture: 'book-open',
-  opinione: 'message-circle',
-  jete: 'sun',
-  udhetim: 'map-pin',
-  ushqim: 'coffee',
-  edukim: 'book',
+  maqedoni: 'map',
+  sport: 'activity',
+  'persekutimi-ndaj-joq': 'shield',
+  kosova: 'flag',
+  sondazhe: 'bar-chart-2',
+  kuriozitete: 'help-circle',
+  thashetheme: 'message-circle',
+  udhetime: 'map-pin',
+  shendeti: 'heart',
+  'si-te': 'book-open',
+  live: 'video',
 };
 
 function getCategoryIcon(slug: string): FeatherIcon {

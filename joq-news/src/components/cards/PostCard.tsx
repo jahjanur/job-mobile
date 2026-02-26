@@ -11,7 +11,7 @@ import { useRouter } from 'expo-router';
 
 import type { AppPost } from '../../api/types';
 import { useTheme } from '../../theme';
-import { formatPostDate } from '../../utils/date';
+import { formatPostDateWithTime } from '../../utils/date';
 import { getImageSource } from '../../utils/image';
 import { estimateReadingTime } from '../../utils/reading';
 import { PressableScale } from '../ui/PressableScale';
@@ -73,7 +73,7 @@ export const PostCard = memo(function PostCard({ post }: PostCardProps) {
             </Text>
             <View style={[styles.dot, { backgroundColor: colors.textTertiary }]} />
             <Text style={[typography.caption, { color: colors.textTertiary }]}>
-              {formatPostDate(post.date)}
+              {formatPostDateWithTime(post.date)}
             </Text>
             <View style={[styles.dot, { backgroundColor: colors.textTertiary }]} />
             <Feather name="clock" size={10} color={colors.textTertiary} />

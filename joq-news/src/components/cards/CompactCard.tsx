@@ -11,7 +11,7 @@ import { useRouter } from 'expo-router';
 
 import type { AppPost } from '../../api/types';
 import { useTheme } from '../../theme';
-import { formatPostDate } from '../../utils/date';
+import { formatPostDateWithTime } from '../../utils/date';
 import { getImageSource } from '../../utils/image';
 import { PressableScale } from '../ui/PressableScale';
 
@@ -93,7 +93,7 @@ export const CompactCard = memo(function CompactCard({
           ]}
           numberOfLines={1}
         >
-          {formatPostDate(post.date)}
+          {formatPostDateWithTime(post.date)}
         </Text>
       </View>
     </PressableScale>

@@ -20,11 +20,16 @@ async function fetchMockPosts(params: {
   page: number;
   perPage: number;
   search?: string;
+  categoryId?: number;
 }): Promise<PaginatedResponse<AppPost>> {
   // Simulate network delay
   await new Promise((r) => setTimeout(r, 600));
 
   let posts = [...MOCK_POSTS];
+
+  if (params.categoryId) {
+    posts = posts.filter((p) => p.categoryIds.includes(params.categoryId!));
+  }
 
   if (params.search) {
     const q = params.search.toLowerCase();
@@ -56,6 +61,7 @@ export function usePosts(options: UsePostsOptions = {}) {
         page: pageParam,
         perPage: Config.POSTS_PER_PAGE,
         search,
+        categoryId,
       }),
     initialPageParam: 1,
     getNextPageParam: (lastPage, _allPages, lastPageParam) => {

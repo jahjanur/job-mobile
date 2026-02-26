@@ -16,7 +16,14 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
+import { useRouter } from 'expo-router';
+
 import { AnimatedSplash } from '../src/components/ui/AnimatedSplash';
+import {
+  registerForPushNotifications,
+  addNotificationListeners,
+} from '../src/services/notifications';
+import { usePreferencesStore } from '../src/store/preferencesStore';
 import { ThemeProvider, useThemeBuilder } from '../src/theme';
 import { Config } from '../src/constants/config';
 
@@ -35,11 +42,38 @@ const queryClient = new QueryClient({
 function AppContent() {
   const theme = useThemeBuilder();
   const [showSplash, setShowSplash] = useState(true);
+  const router = useRouter();
+  const notificationsEnabled = usePreferencesStore((s) => s.notificationsEnabled);
+  const setPushToken = usePreferencesStore((s) => s.setPushToken);
 
   useEffect(() => {
     // Hide the native splash once our JS splash is visible
     SplashScreen.hideAsync();
   }, []);
+
+  // Register for push notifications when enabled
+  useEffect(() => {
+    if (notificationsEnabled) {
+      registerForPushNotifications().then((token) => {
+        if (token) setPushToken(token);
+      });
+    }
+  }, [notificationsEnabled, setPushToken]);
+
+  // Handle notification taps → navigate to article
+  useEffect(() => {
+    const cleanup = addNotificationListeners(
+      () => {}, // foreground notification received
+      (response) => {
+        const articleId =
+          response.notification.request.content.data?.articleId;
+        if (articleId) {
+          router.push(`/article/${articleId}`);
+        }
+      },
+    );
+    return cleanup;
+  }, [router]);
 
   const handleSplashFinish = useCallback(() => {
     setShowSplash(false);
@@ -67,6 +101,12 @@ function AppContent() {
             name="category/[id]"
             options={{
               animation: 'slide_from_right',
+            }}
+          />
+          <Stack.Screen
+            name="(auth)"
+            options={{
+              animation: 'slide_from_bottom',
             }}
           />
         </Stack>

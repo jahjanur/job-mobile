@@ -79,6 +79,7 @@ export function mapPost(post: WPPost): AppPost {
     categoryIds: post.categories,
     categoryNames: extractCategoryNames(post),
     tagIds: post.tags,
+    viewCount: 0,
     link: post.link,
   };
 }

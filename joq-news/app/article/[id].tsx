@@ -20,6 +20,7 @@ import * as Haptics from 'expo-haptics';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { AdBanner } from '../../src/components/ads/AdBanner';
 import { ArticleContent } from '../../src/components/article/ArticleContent';
 import { RelatedArticles } from '../../src/components/article/RelatedArticles';
 import { ArticleDetailSkeleton } from '../../src/components/loaders/SkeletonBox';
@@ -286,6 +287,9 @@ export default function ArticleScreen() {
           {/* Article body (rendered HTML) */}
           <ArticleContent html={post.content} />
         </View>
+
+        {/* Article ad banner */}
+        <AdBanner />
 
         {/* Related articles */}
         <RelatedArticles

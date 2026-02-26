@@ -12,7 +12,7 @@ import { useRouter } from 'expo-router';
 
 import { type BookmarkEntry, useBookmarksStore } from '../../store/bookmarksStore';
 import { useTheme } from '../../theme';
-import { formatPostDate } from '../../utils/date';
+import { formatPostDateWithTime } from '../../utils/date';
 import { getImageSource } from '../../utils/image';
 import { PressableScale } from '../ui/PressableScale';
 
@@ -82,7 +82,7 @@ export const BookmarkCard = memo(function BookmarkCard({
               style={{ marginRight: 4 }}
             />
             <Text style={[typography.caption, { color: colors.textTertiary }]}>
-              {formatPostDate(bookmark.bookmarkedAt)}
+              {formatPostDateWithTime(bookmark.bookmarkedAt)}
             </Text>
           </View>
         </View>
