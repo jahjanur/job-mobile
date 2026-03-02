@@ -5,7 +5,7 @@
  */
 
 const WP_BASE_URL =
-  process.env.EXPO_PUBLIC_WP_BASE_URL ?? 'https://your-wordpress-site.com';
+  process.env.EXPO_PUBLIC_WP_BASE_URL ?? 'https://admin.joq-albania.com';
 
 export const Config = {
   /** WordPress REST API root */

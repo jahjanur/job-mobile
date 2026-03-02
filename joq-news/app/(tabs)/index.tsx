@@ -21,7 +21,6 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { AppPost } from '../../src/api/types';
-import { MOCK_CATEGORIES } from '../../src/api/mockData';
 import { AdBanner } from '../../src/components/ads/AdBanner';
 import { CompactCard } from '../../src/components/cards/CompactCard';
 import { HeroCard } from '../../src/components/cards/HeroCard';
@@ -31,6 +30,7 @@ import { HeroSkeleton, PostCardSkeleton } from '../../src/components/loaders/Ske
 import { AppLogo } from '../../src/components/ui/AppLogo';
 import { CategoryBar } from '../../src/components/ui/CategoryBar';
 import { PressableScale } from '../../src/components/ui/PressableScale';
+import { useCategories } from '../../src/hooks/useCategories';
 import { usePosts } from '../../src/hooks/usePosts';
 import { useRefreshByUser } from '../../src/hooks/useRefreshByUser';
 import { useTrendingPosts } from '../../src/hooks/useTrendingPosts';
@@ -83,6 +83,7 @@ export default function HomeScreen() {
 
   const { isRefreshing, onRefresh } = useRefreshByUser(refetch);
   const { data: trendingData } = useTrendingPosts({ limit: 6 });
+  const { data: categories = [] } = useCategories();
 
   const allPosts = useMemo(
     () => data?.pages.flatMap((p) => p.data) ?? [],
@@ -163,11 +164,11 @@ export default function HomeScreen() {
 
         {/* ── Category quick bar ─────────────────────── */}
         <CategoryBar
-          categories={MOCK_CATEGORIES}
+          categories={categories}
           selectedId={null}
           onSelect={(catId) => {
             if (catId !== null) {
-              const cat = MOCK_CATEGORIES.find((c) => c.id === catId);
+              const cat = categories.find((c) => c.id === catId);
               router.push(
                 `/category/${catId}?name=${encodeURIComponent(cat?.name ?? '')}`,
               );
@@ -414,7 +415,7 @@ export default function HomeScreen() {
             paddingBottom: spacing.xs,
           }}
         >
-          {MOCK_CATEGORIES.map((cat, i) => {
+          {categories.map((cat, i) => {
             const color = PILL_COLORS[i % PILL_COLORS.length];
             const iconName = CATEGORY_ICONS[cat.slug] ?? 'hash';
             return (
@@ -689,9 +690,9 @@ export default function HomeScreen() {
         )}
 
         {/* ── Dynamic category spotlights ────────────── */}
-        <CategorySpotlight categoryId={2} categoryName="Lajme" />
-        <CategorySpotlight categoryId={7} categoryName="Sport" />
-        <CategorySpotlight categoryId={3} categoryName="Teknologji" />
+        <CategorySpotlight categoryId={82} categoryName="JOQ News" />
+        <CategorySpotlight categoryId={45} categoryName="Sport" />
+        <CategorySpotlight categoryId={37958} categoryName="Kosovë" />
 
         {/* ── Divider + Latest section ───────────────── */}
         <View
@@ -739,6 +740,7 @@ export default function HomeScreen() {
     trendingPosts,
     spotlightPost,
     gridPosts,
+    categories,
     insets.top,
     spacing,
     typography,
