@@ -123,6 +123,9 @@ export default function LiveScreen() {
     <View style={s.screen}>
       <StatusBar barStyle="light-content" />
 
+      {/* Safe area spacer */}
+      <View style={{ height: insets.top, backgroundColor: '#000' }} />
+
       {/* ── Video ────────────────────────────────── */}
       <View style={s.videoWrap}>
         <Video
@@ -172,7 +175,7 @@ export default function LiveScreen() {
           <Animated.View
             entering={FadeIn.duration(150)}
             exiting={FadeOut.duration(150)}
-            style={[s.controlsWrap, { paddingTop: insets.top }]}
+            style={s.controlsWrap}
             pointerEvents="box-none"
           >
             {/* Top */}
