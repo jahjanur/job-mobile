@@ -16,6 +16,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Speech from 'expo-speech';
@@ -107,29 +108,50 @@ export default function ArticleScreen() {
   }, [post]);
 
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [speechRate, setSpeechRate] = useState(0.85);
 
-  const handleTextToSpeech = useCallback(() => {
+  const handleTextToSpeech = useCallback(async () => {
     if (!post) return;
     if (isSpeaking) {
       Speech.stop();
       setIsSpeaking(false);
       return;
     }
-    const plainText = post.content
-      .replace(/<[^>]*>/g, ' ')
+
+    // Clean HTML and decode entities
+    let plainText = post.content
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<\/p>/gi, '\n\n')
+      .replace(/<[^>]*>/g, '')
       .replace(/&nbsp;/g, ' ')
       .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#039;/g, "'")
       .replace(/\s+/g, ' ')
       .trim();
+
+    // Prepend title for context
+    plainText = `${post.title}.\n\n${plainText}`;
+
+    // Try to find the best available voice
+    const voices = await Speech.getAvailableVoicesAsync();
+    const sqVoice = voices.find((v) =>
+      v.language.startsWith('sq') && v.quality === 'Enhanced',
+    ) ?? voices.find((v) => v.language.startsWith('sq'));
+
     setIsSpeaking(true);
     Speech.speak(plainText, {
-      language: 'sq',
-      rate: 0.9,
+      language: sqVoice?.language ?? 'sq',
+      voice: sqVoice?.identifier,
+      rate: speechRate,
+      pitch: 1.05,
       onDone: () => setIsSpeaking(false),
       onStopped: () => setIsSpeaking(false),
       onError: () => setIsSpeaking(false),
     });
-  }, [post, isSpeaking]);
+  }, [post, isSpeaking, speechRate]);
 
   /* ── Floating top bar ─────────────────────────── */
   const TopBar = (
@@ -401,10 +423,62 @@ export default function ArticleScreen() {
                   },
                 ]}
               >
-                {isSpeaking ? 'Ndalo' : 'Dëgjo'}
+                {isSpeaking ? 'Ndalo' : 'Degjo'}
               </Text>
             </Pressable>
           </View>
+
+          {/* ── Speed control (visible when speaking) ─ */}
+          {isSpeaking && (
+            <View
+              style={[
+                styles.speedRow,
+                {
+                  marginTop: spacing.md,
+                  paddingVertical: spacing.sm,
+                  paddingHorizontal: spacing.lg,
+                  backgroundColor: colors.accentLight,
+                  borderRadius: radius.md,
+                },
+              ]}
+            >
+              <Ionicons name="speedometer-outline" size={14} color={colors.accent} />
+              <Text
+                style={[typography.caption, { color: colors.accent, marginLeft: spacing.xs, flex: 1 }]}
+              >
+                Shpejtesia
+              </Text>
+              {[0.7, 0.85, 1.0, 1.2].map((rate) => (
+                <TouchableOpacity
+                  key={rate}
+                  onPress={() => {
+                    setSpeechRate(rate);
+                    // Restart with new rate
+                    Speech.stop();
+                    setIsSpeaking(false);
+                    setTimeout(() => handleTextToSpeech(), 200);
+                  }}
+                  activeOpacity={0.6}
+                  style={[
+                    styles.speedChip,
+                    {
+                      backgroundColor: speechRate === rate ? colors.accent : 'transparent',
+                      borderRadius: radius.sm,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      typography.label,
+                      { color: speechRate === rate ? '#FFF' : colors.accent },
+                    ]}
+                  >
+                    {rate === 1.0 ? '1x' : `${rate}x`}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
 
           {/* ── Article body ──────────────────────── */}
           <View style={{ marginTop: spacing.xl }}>
@@ -502,5 +576,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 4,
     paddingHorizontal: 8,
+  },
+  speedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  speedChip: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    marginLeft: 4,
   },
 });
