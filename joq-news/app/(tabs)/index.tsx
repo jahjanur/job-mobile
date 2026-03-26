@@ -88,7 +88,7 @@ export default function HomeScreen() {
   const todayFormatted = formatTodayAlbanian();
 
   const ListHeader = (
-    <View style={{ paddingTop: insets.top + spacing.md }}>
+    <View style={{ paddingTop: insets.top + spacing.lg }}>
     {isLoading ? (
       <>
         <View

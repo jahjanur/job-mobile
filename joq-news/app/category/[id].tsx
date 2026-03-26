@@ -78,7 +78,7 @@ export default function CategoryFeedScreen() {
           style={[
             styles.fixedHeader,
             {
-              paddingTop: insets.top + spacing.sm,
+              paddingTop: insets.top + spacing.lg,
               paddingHorizontal: spacing.lg,
               paddingBottom: spacing.md,
               backgroundColor: colors.background,

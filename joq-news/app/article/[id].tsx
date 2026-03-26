@@ -169,9 +169,10 @@ export default function ArticleScreen() {
   if (isLoading) {
     return (
       <View style={[styles.screen, { backgroundColor: colors.background }]}>
+        <View style={{ height: insets.top }} />
         {TopBar}
         <ScrollView>
-          <View style={{ height: insets.top + 40 }} />
+          <View style={{ height: 50 }} />
           <ArticleDetailSkeleton />
         </ScrollView>
       </View>
@@ -182,9 +183,10 @@ export default function ArticleScreen() {
   if (isError || !post) {
     return (
       <View style={[styles.screen, { backgroundColor: colors.background }]}>
+        <View style={{ height: insets.top }} />
         {TopBar}
         <ErrorState
-          message="Artikulli nuk mund të ngarkohej."
+          message="Artikulli nuk mund te ngarkohej."
           onRetry={() => refetch()}
         />
       </View>
@@ -195,6 +197,18 @@ export default function ArticleScreen() {
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.background }]}>
+      {/* Status bar background */}
+      <View
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: insets.top,
+          backgroundColor: dark ? 'rgba(0,0,0,0.6)' : 'rgba(0,0,0,0.3)',
+          zIndex: 25,
+        }}
+      />
       <ReadingProgressBar progress={readingProgress} />
       {TopBar}
 
@@ -208,7 +222,7 @@ export default function ArticleScreen() {
         <View style={styles.heroContainer}>
           <Image
             source={getImageSource(post.featuredImageLarge ?? post.featuredImage)}
-            style={[styles.heroImage, { height: 340 }]}
+            style={[styles.heroImage, { height: 340 + insets.top }]}
             contentFit="cover"
             transition={400}
           />
