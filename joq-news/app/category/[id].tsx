@@ -1,11 +1,10 @@
 /**
- * Category feed screen — premium design with Feather icons.
- * Reuses the PostFeed component with a category filter.
+ * Category feed screen — shows posts filtered by category.
  */
 
 import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -64,7 +63,7 @@ export default function CategoryFeedScreen() {
             ]}
             hitSlop={8}
           >
-            <Feather name="arrow-left" size={20} color={colors.text} />
+            <Ionicons name="arrow-back" size={20} color={colors.text} />
           </Pressable>
           <View style={{ flex: 1 }}>
             <Text
@@ -74,7 +73,6 @@ export default function CategoryFeedScreen() {
                   color: colors.text,
                   fontSize: 22,
                   letterSpacing: -0.3,
-                  fontWeight: '700',
                 },
               ]}
             >

@@ -44,8 +44,8 @@ export function AnimatedSplash({ onFinish }: AnimatedSplashProps) {
 
     // Fade out the entire splash after a brief pause
     opacity.value = withDelay(
-      1200,
-      withTiming(0, { duration: 400, easing: Easing.in(Easing.cubic) }, () => {
+      700,
+      withTiming(0, { duration: 300, easing: Easing.in(Easing.cubic) }, () => {
         runOnJS(onFinish)();
       }),
     );

@@ -13,7 +13,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import type { ComponentProps } from 'react';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -30,7 +30,7 @@ import { HeroSkeleton, PostCardSkeleton } from '../../src/components/loaders/Ske
 import { AppLogo } from '../../src/components/ui/AppLogo';
 import { CategoryBar } from '../../src/components/ui/CategoryBar';
 import { PressableScale } from '../../src/components/ui/PressableScale';
-import { useCategories } from '../../src/hooks/useCategories';
+import { WP_CATEGORIES, getCategoryIcon } from '../../src/constants/categories';
 import { usePosts } from '../../src/hooks/usePosts';
 import { useRefreshByUser } from '../../src/hooks/useRefreshByUser';
 import { useTrendingPosts } from '../../src/hooks/useTrendingPosts';
@@ -39,26 +39,7 @@ import { formatPostDateWithTime, formatTodayAlbanian } from '../../src/utils/dat
 import { getImageSource } from '../../src/utils/image';
 import { estimateReadingTime } from '../../src/utils/reading';
 
-type FeatherIcon = ComponentProps<typeof Feather>['name'];
-
-const CATEGORY_ICONS: Record<string, FeatherIcon> = {
-  'vec-e-jona': 'star',
-  lajme: 'radio',
-  teknologji: 'cpu',
-  bota: 'globe',
-  argetim: 'film',
-  maqedoni: 'map',
-  sport: 'activity',
-  'persekutimi-ndaj-joq': 'shield',
-  kosova: 'flag',
-  sondazhe: 'bar-chart-2',
-  kuriozitete: 'help-circle',
-  thashetheme: 'message-circle',
-  udhetime: 'map-pin',
-  shendeti: 'heart',
-  'si-te': 'book-open',
-  live: 'video',
-};
+type IonIcon = ComponentProps<typeof Ionicons>['name'];
 
 const PILL_COLORS = [
   '#3B82F6', '#8B5CF6', '#EC4899', '#F97316',
@@ -83,7 +64,7 @@ export default function HomeScreen() {
 
   const { isRefreshing, onRefresh } = useRefreshByUser(refetch);
   const { data: trendingData } = useTrendingPosts({ limit: 6 });
-  const { data: categories = [] } = useCategories();
+  const categories = WP_CATEGORIES;
 
   const allPosts = useMemo(
     () => data?.pages.flatMap((p) => p.data) ?? [],
@@ -158,13 +139,13 @@ export default function HomeScreen() {
               },
             ]}
           >
-            <Feather name="bell" size={18} color={colors.icon} />
+            <Ionicons name="notifications-outline" size={18} color={colors.icon} />
           </View>
         </View>
 
         {/* ── Category quick bar ─────────────────────── */}
         <CategoryBar
-          categories={categories}
+          categories={categories.map((c) => ({ id: c.id, name: c.name, slug: c.slug, count: 0, parentId: 0 }))}
           selectedId={null}
           onSelect={(catId) => {
             if (catId !== null) {
@@ -189,8 +170,8 @@ export default function HomeScreen() {
               ]}
             >
               <View style={styles.sectionTitleRow}>
-                <Feather
-                  name="trending-up"
+                <Ionicons
+                  name="trending-up-outline"
                   size={16}
                   color={colors.accent}
                 />
@@ -240,7 +221,7 @@ export default function HomeScreen() {
               ]}
             >
               <View style={styles.sectionTitleRow}>
-                <Feather name="star" size={16} color="#F59E0B" />
+                <Ionicons name="star" size={16} color="#F59E0B" />
                 <Text
                   style={[
                     typography.h3,
@@ -339,8 +320,8 @@ export default function HomeScreen() {
                 </Text>
                 <View style={[styles.spotlightMeta, { marginTop: spacing.md }]}>
                   <View style={styles.sectionTitleRow}>
-                    <Feather
-                      name="user"
+                    <Ionicons
+                      name="person-outline"
                       size={12}
                       color={colors.textTertiary}
                     />
@@ -357,8 +338,8 @@ export default function HomeScreen() {
                     </Text>
                   </View>
                   <View style={styles.sectionTitleRow}>
-                    <Feather
-                      name="clock"
+                    <Ionicons
+                      name="time-outline"
                       size={12}
                       color={colors.textTertiary}
                     />
@@ -391,7 +372,7 @@ export default function HomeScreen() {
           ]}
         >
           <View style={styles.sectionTitleRow}>
-            <Feather name="compass" size={16} color={colors.accent} />
+            <Ionicons name="compass-outline" size={16} color={colors.accent} />
             <Text
               style={[
                 typography.h3,
@@ -417,7 +398,7 @@ export default function HomeScreen() {
         >
           {categories.map((cat, i) => {
             const color = PILL_COLORS[i % PILL_COLORS.length];
-            const iconName = CATEGORY_ICONS[cat.slug] ?? 'hash';
+            const iconName = getCategoryIcon(cat.slug);
             return (
               <Pressable
                 key={cat.id}
@@ -439,12 +420,16 @@ export default function HomeScreen() {
                   },
                 ]}
               >
-                <Feather
-                  name={iconName}
-                  size={14}
-                  color={color}
-                  style={{ marginRight: spacing.xs + 1 }}
-                />
+                {cat.flag ? (
+                  <Text style={{ fontSize: 14, marginRight: spacing.xs + 1 }}>{cat.flag}</Text>
+                ) : (
+                  <Ionicons
+                    name={iconName}
+                    size={15}
+                    color={color}
+                    style={{ marginRight: spacing.xs + 1 }}
+                  />
+                )}
                 <Text
                   style={[
                     typography.captionMedium,
@@ -471,7 +456,7 @@ export default function HomeScreen() {
               ]}
             >
               <View style={styles.sectionTitleRow}>
-                <Feather name="zap" size={16} color={colors.accent} />
+                <Ionicons name="flash-outline" size={16} color={colors.accent} />
                 <Text
                   style={[
                     typography.h3,
@@ -666,8 +651,8 @@ export default function HomeScreen() {
                   <View
                     style={[styles.sectionTitleRow, { marginTop: spacing.sm }]}
                   >
-                    <Feather
-                      name="clock"
+                    <Ionicons
+                      name="time-outline"
                       size={10}
                       color={colors.textTertiary}
                     />
@@ -690,9 +675,10 @@ export default function HomeScreen() {
         )}
 
         {/* ── Dynamic category spotlights ────────────── */}
-        <CategorySpotlight categoryId={82} categoryName="JOQ News" />
-        <CategorySpotlight categoryId={45} categoryName="Sport" />
+        <CategorySpotlight categoryId={6} categoryName="Veç e jona" />
+        <CategorySpotlight categoryId={82} categoryName="Shqipëri" />
         <CategorySpotlight categoryId={37958} categoryName="Kosovë" />
+        <CategorySpotlight categoryId={45} categoryName="Sport" />
 
         {/* ── Divider + Latest section ───────────────── */}
         <View
@@ -717,7 +703,7 @@ export default function HomeScreen() {
           ]}
         >
           <View style={styles.sectionTitleRow}>
-            <Feather name="clock" size={16} color={colors.accent} />
+            <Ionicons name="time-outline" size={16} color={colors.accent} />
             <Text
               style={[
                 typography.h3,

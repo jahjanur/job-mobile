@@ -17,7 +17,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import type { ComponentProps } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -35,16 +35,16 @@ import {
 import { type ThemeMode, useTheme } from '../../src/theme';
 import type { FontSize } from '../../src/theme/typography';
 
-type FeatherIcon = ComponentProps<typeof Feather>['name'];
+type IonIcon = ComponentProps<typeof Ionicons>['name'];
 
 /* ────────────────────────────────────────────── */
 /*  Options                                        */
 /* ────────────────────────────────────────────── */
 
-const THEME_OPTIONS: { label: string; value: ThemeMode; icon: FeatherIcon }[] = [
-  { label: 'Dritë', value: 'light', icon: 'sun' },
-  { label: 'Errët', value: 'dark', icon: 'moon' },
-  { label: 'Sistem', value: 'system', icon: 'smartphone' },
+const THEME_OPTIONS: { label: string; value: ThemeMode; icon: IonIcon }[] = [
+  { label: 'Dritë', value: 'light', icon: 'sunny-outline' },
+  { label: 'Errët', value: 'dark', icon: 'moon-outline' },
+  { label: 'Sistem', value: 'system', icon: 'phone-portrait-outline' },
 ];
 
 const FONT_OPTIONS: { label: string; value: FontSize }[] = [
@@ -56,19 +56,19 @@ const FONT_OPTIONS: { label: string; value: FontSize }[] = [
 const NOTIF_CATEGORIES: {
   key: NotificationCategory;
   label: string;
-  icon: FeatherIcon;
+  icon: IonIcon;
 }[] = [
-  { key: 'breakingNews', label: 'Lajme urgjente', icon: 'alert-circle' },
-  { key: 'politike', label: 'Politikë', icon: 'flag' },
-  { key: 'sport', label: 'Sport', icon: 'activity' },
-  { key: 'argetim', label: 'Argëtim & Showbiz', icon: 'film' },
-  { key: 'importantOnly', label: 'Vetëm alarme të rëndësishme', icon: 'bell' },
+  { key: 'breakingNews', label: 'Lajme urgjente', icon: 'alert-circle-outline' },
+  { key: 'politike', label: 'Politikë', icon: 'flag-outline' },
+  { key: 'sport', label: 'Sport', icon: 'football-outline' },
+  { key: 'argetim', label: 'Argëtim & Showbiz', icon: 'film-outline' },
+  { key: 'importantOnly', label: 'Vetëm alarme të rëndësishme', icon: 'notifications-outline' },
 ];
 
-const SOCIAL_LINKS: { label: string; icon: FeatherIcon; url: string }[] = [
-  { label: 'Instagram', icon: 'instagram', url: 'https://instagram.com/joqalbania' },
-  { label: 'Facebook', icon: 'facebook', url: 'https://facebook.com/joqalbania' },
-  { label: 'Faqja e internetit', icon: 'globe', url: 'https://joq-albania.com' },
+const SOCIAL_LINKS: { label: string; icon: IonIcon; url: string }[] = [
+  { label: 'Instagram', icon: 'logo-instagram', url: 'https://instagram.com/joqalbania' },
+  { label: 'Facebook', icon: 'logo-facebook', url: 'https://facebook.com/joqalbania' },
+  { label: 'Faqja e internetit', icon: 'globe-outline', url: 'https://joq-albania.com' },
 ];
 
 /* ────────────────────────────────────────────── */
@@ -80,7 +80,7 @@ function SegmentedControl<T extends string>({
   selected,
   onSelect,
 }: {
-  options: { label: string; value: T; icon?: FeatherIcon }[];
+  options: { label: string; value: T; icon?: IonIcon }[];
   selected: T;
   onSelect: (value: T) => void;
 }) {
@@ -108,7 +108,7 @@ function SegmentedControl<T extends string>({
             ]}
           >
             {opt.icon && (
-              <Feather
+              <Ionicons
                 name={opt.icon}
                 size={14}
                 color={active ? colors.text : colors.textTertiary}
@@ -179,7 +179,7 @@ function SettingRow({
   isLast,
 }: {
   label: string;
-  icon: FeatherIcon;
+  icon: IonIcon;
   children: React.ReactNode;
   isLast?: boolean;
 }) {
@@ -196,7 +196,7 @@ function SettingRow({
       ]}
     >
       <View style={styles.rowLabel}>
-        <Feather
+        <Ionicons
           name={icon}
           size={18}
           color={colors.textSecondary}
@@ -218,7 +218,7 @@ function LinkRow({
   isLast,
 }: {
   label: string;
-  icon: FeatherIcon;
+  icon: IonIcon;
   onPress: () => void;
   isLast?: boolean;
 }) {
@@ -236,7 +236,7 @@ function LinkRow({
       ]}
     >
       <View style={styles.rowLabel}>
-        <Feather
+        <Ionicons
           name={icon}
           size={18}
           color={colors.textSecondary}
@@ -246,7 +246,7 @@ function LinkRow({
           {label}
         </Text>
       </View>
-      <Feather name="chevron-right" size={18} color={colors.textTertiary} />
+      <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
     </Pressable>
   );
 }
@@ -259,7 +259,7 @@ function InfoRow({
 }: {
   label: string;
   value: string;
-  icon: FeatherIcon;
+  icon: IonIcon;
   isLast?: boolean;
 }) {
   const { colors, spacing, typography } = useTheme();
@@ -275,7 +275,7 @@ function InfoRow({
       ]}
     >
       <View style={styles.rowLabel}>
-        <Feather
+        <Ionicons
           name={icon}
           size={18}
           color={colors.textSecondary}
@@ -406,14 +406,14 @@ export default function SettingsScreen() {
       <Card>
         {isAuthenticated && authUser ? (
           <>
-            <InfoRow label="Emri" value={authUser.displayName ?? 'Pa emër'} icon="user" />
-            <InfoRow label="Email" value={authUser.email ?? ''} icon="mail" />
-            <LinkRow label="Dil nga llogaria" icon="log-out" onPress={authLogout} isLast />
+            <InfoRow label="Emri" value={authUser.displayName ?? 'Pa emër'} icon="person-outline" />
+            <InfoRow label="Email" value={authUser.email ?? ''} icon="mail-outline" />
+            <LinkRow label="Dil nga llogaria" icon="log-out-outline" onPress={authLogout} isLast />
           </>
         ) : (
           <LinkRow
             label="Hyr / Regjistrohu"
-            icon="log-in"
+            icon="log-in-outline"
             onPress={() => router.push('/(auth)/login')}
             isLast
           />
@@ -425,21 +425,21 @@ export default function SettingsScreen() {
       {/* ═══════════════════════════════════════ */}
       <SectionLabel text="PAMJA" />
       <Card>
-        <SettingRow label="Tema" icon="eye">
+        <SettingRow label="Tema" icon="eye-outline">
           <SegmentedControl
             options={THEME_OPTIONS}
             selected={themeMode}
             onSelect={setThemeMode}
           />
         </SettingRow>
-        <SettingRow label="Madhësia e shkronjave" icon="type">
+        <SettingRow label="Madhësia e shkronjave" icon="text-outline">
           <SegmentedControl
             options={FONT_OPTIONS}
             selected={fontSize}
             onSelect={setFontSize}
           />
         </SettingRow>
-        <SettingRow label="Redukto lëvizjet" icon="minimize-2">
+        <SettingRow label="Redukto lëvizjet" icon="contract-outline">
           <Switch
             value={reduceMotion}
             onValueChange={setReduceMotion}
@@ -447,7 +447,7 @@ export default function SettingsScreen() {
             thumbColor="#FFFFFF"
           />
         </SettingRow>
-        <SettingRow label="Dridhje haptike" icon="smartphone" isLast>
+        <SettingRow label="Dridhje haptike" icon="phone-portrait-outline" isLast>
           <Switch
             value={hapticFeedback}
             onValueChange={setHapticFeedback}
@@ -462,7 +462,7 @@ export default function SettingsScreen() {
       {/* ═══════════════════════════════════════ */}
       <SectionLabel text="NJOFTIMET" />
       <Card>
-        <SettingRow label="Njoftimet Push" icon="bell">
+        <SettingRow label="Njoftimet Push" icon="notifications-outline">
           <Switch
             value={notificationsEnabled}
             onValueChange={async (enabled) => {
@@ -510,10 +510,10 @@ export default function SettingsScreen() {
       <Card>
         {isSubscribed && subscriptionEmail ? (
           <>
-            <InfoRow label="Email" value={subscriptionEmail} icon="mail" />
+            <InfoRow label="Email" value={subscriptionEmail} icon="mail-outline" />
             <LinkRow
               label="Anullo abonimin"
-              icon="x-circle"
+              icon="close-circle-outline"
               onPress={() => {
                 Alert.alert(
                   'Anullo abonimin',
@@ -530,7 +530,7 @@ export default function SettingsScreen() {
         ) : (
           <LinkRow
             label="Abonohu për lajme me email"
-            icon="mail"
+            icon="mail-outline"
             onPress={() => {
               Alert.prompt?.(
                 'Abonohu me email',
@@ -569,22 +569,22 @@ export default function SettingsScreen() {
       <Card>
         <LinkRow
           label="Politika e privatësisë"
-          icon="shield"
+          icon="shield-outline"
           onPress={() => openLink('https://joq-albania.com/privacy')}
         />
         <LinkRow
           label="Kushtet e përdorimit"
-          icon="file-text"
+          icon="document-text-outline"
           onPress={() => openLink('https://joq-albania.com/terms')}
         />
         <LinkRow
           label="Njoftim për të dhënat"
-          icon="database"
+          icon="server-outline"
           onPress={() => openLink('https://joq-albania.com/data')}
         />
         <LinkRow
           label="Lejet e aplikacionit"
-          icon="lock"
+          icon="lock-closed-outline"
           onPress={() => Linking.openSettings()}
           isLast
         />
@@ -597,29 +597,29 @@ export default function SettingsScreen() {
       <Card>
         <LinkRow
           label="Na kontaktoni"
-          icon="mail"
+          icon="mail-outline"
           onPress={handleContact}
         />
         <LinkRow
           label="Raporto një problem"
-          icon="alert-triangle"
+          icon="warning-outline"
           onPress={handleReportProblem}
         />
         <LinkRow
           label="Pyetje të shpeshta (FAQ)"
-          icon="help-circle"
+          icon="help-circle-outline"
           onPress={() => openLink('https://joq-albania.com/faq')}
         />
         <LinkRow
           label="Dërgo përshtypje"
-          icon="message-square"
+          icon="chatbox-outline"
           onPress={() =>
             Linking.openURL('mailto:feedback@joq-albania.com?subject=Përshtypje - JOQ News')
           }
         />
         <LinkRow
           label="Raporto lajm të pasaktë"
-          icon="alert-octagon"
+          icon="alert-circle-outline"
           onPress={handleReportNews}
           isLast
         />
@@ -632,17 +632,17 @@ export default function SettingsScreen() {
       <Card>
         <LinkRow
           label="Ndaj JOQ News"
-          icon="share-2"
+          icon="share-outline"
           onPress={handleShareApp}
         />
         <LinkRow
           label="Ftoni miqtë"
-          icon="users"
+          icon="people-outline"
           onPress={handleShareApp}
         />
         <LinkRow
           label="Vlerëso aplikacionin"
-          icon="star"
+          icon="star-outline"
           onPress={() =>
             openLink(
               Platform.select({
@@ -660,12 +660,12 @@ export default function SettingsScreen() {
       {/* ═══════════════════════════════════════ */}
       <SectionLabel text="RRETH" />
       <Card>
-        <InfoRow label="Versioni" value={Config.APP_VERSION} icon="info" />
-        <InfoRow label="Numri i ndërtimit" value="1" icon="hash" />
+        <InfoRow label="Versioni" value={Config.APP_VERSION} icon="information-circle-outline" />
+        <InfoRow label="Numri i ndërtimit" value="1" icon="code-outline" />
         <InfoRow
           label="Artikuj të ruajtur"
           value={String(bookmarkCount)}
-          icon="bookmark"
+          icon="bookmark-outline"
         />
         {SOCIAL_LINKS.map((link, i) => (
           <LinkRow

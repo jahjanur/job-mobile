@@ -14,7 +14,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -88,7 +88,7 @@ export default function LoginScreen() {
           style={[styles.backBtn, { marginBottom: spacing.xxl }]}
           hitSlop={12}
         >
-          <Feather name="arrow-left" size={24} color={colors.text} />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </Pressable>
 
         {/* Logo + title */}
@@ -134,8 +134,8 @@ export default function LoginScreen() {
             },
           ]}
         >
-          <Feather
-            name="chrome"
+          <Ionicons
+            name="logo-google"
             size={20}
             color="#4285F4"
             style={{ marginRight: spacing.md }}
@@ -156,8 +156,8 @@ export default function LoginScreen() {
             },
           ]}
         >
-          <Feather
-            name="facebook"
+          <Ionicons
+            name="logo-facebook"
             size={20}
             color="#FFFFFF"
             style={{ marginRight: spacing.md }}
@@ -242,8 +242,8 @@ export default function LoginScreen() {
             style={[styles.eyeBtn, { right: spacing.lg }]}
             hitSlop={8}
           >
-            <Feather
-              name={showPassword ? 'eye-off' : 'eye'}
+            <Ionicons
+              name={showPassword ? 'eye-off-outline' : 'eye-outline'}
               size={18}
               color={colors.textTertiary}
             />

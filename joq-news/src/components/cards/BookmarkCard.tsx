@@ -1,11 +1,11 @@
 /**
  * Card for the bookmarks screen.
- * Premium design with Feather icons, reading time, and refined styling.
+ * Premium design with reading time and refined styling.
  */
 
 import React, { memo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
@@ -75,9 +75,9 @@ export const BookmarkCard = memo(function BookmarkCard({
             {bookmark.title}
           </Text>
           <View style={[styles.metaRow, { marginTop: spacing.sm }]}>
-            <Feather
-              name="clock"
-              size={12}
+            <Ionicons
+              name="time-outline"
+              size={13}
               color={colors.textTertiary}
               style={{ marginRight: 4 }}
             />
@@ -105,7 +105,7 @@ export const BookmarkCard = memo(function BookmarkCard({
               },
             ]}
           >
-            <Feather name="x" size={12} color={colors.textTertiary} />
+            <Ionicons name="close" size={13} color={colors.textTertiary} />
           </Pressable>
         </View>
       </View>

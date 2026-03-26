@@ -6,7 +6,7 @@
 
 import React, { memo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
@@ -89,7 +89,7 @@ export const HeroCard = memo(function HeroCard({ post }: HeroCardProps) {
             },
           ]}
         >
-          <Feather name="clock" size={10} color="rgba(255,255,255,0.8)" />
+          <Ionicons name="time-outline" size={11} color="rgba(255,255,255,0.8)" />
           <Text
             style={[
               typography.label,

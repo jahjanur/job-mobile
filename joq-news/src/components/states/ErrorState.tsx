@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 
 import { useTheme } from '../../theme';
 
@@ -26,7 +26,7 @@ export function ErrorState({
           },
         ]}
       >
-        <Feather name="alert-triangle" size={28} color="#EF4444" />
+        <Ionicons name="warning-outline" size={28} color="#EF4444" />
       </View>
       <Text
         style={[
@@ -55,9 +55,9 @@ export function ErrorState({
             },
           ]}
         >
-          <Feather
-            name="refresh-cw"
-            size={14}
+          <Ionicons
+            name="refresh-outline"
+            size={15}
             color="#FFFFFF"
             style={{ marginRight: 6 }}
           />

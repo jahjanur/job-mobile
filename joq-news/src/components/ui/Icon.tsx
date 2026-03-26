@@ -1,15 +1,15 @@
 /**
- * Centralized icon component using Feather icons.
- * Clean, minimal stroke-based icons that match a premium editorial style.
+ * Centralized icon component using Ionicons.
  */
 
 import React from 'react';
-import { Feather } from '@expo/vector-icons';
 import type { ComponentProps } from 'react';
+
+import { Ionicons } from '@expo/vector-icons';
 
 import { useTheme } from '../../theme';
 
-export type IconName = ComponentProps<typeof Feather>['name'];
+export type IconName = ComponentProps<typeof Ionicons>['name'];
 
 interface IconProps {
   name: IconName;
@@ -19,5 +19,5 @@ interface IconProps {
 
 export function Icon({ name, size = 22, color }: IconProps) {
   const { colors } = useTheme();
-  return <Feather name={name} size={size} color={color ?? colors.icon} />;
+  return <Ionicons name={name} size={size} color={color ?? colors.icon} />;
 }

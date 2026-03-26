@@ -14,7 +14,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -68,7 +68,7 @@ export default function ForgotPasswordScreen() {
           style={[styles.backBtn, { marginBottom: spacing.xxl }]}
           hitSlop={12}
         >
-          <Feather name="arrow-left" size={24} color={colors.text} />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </Pressable>
 
         {sent ? (
@@ -86,7 +86,7 @@ export default function ForgotPasswordScreen() {
                 },
               ]}
             >
-              <Feather name="check" size={28} color={colors.accent} />
+              <Ionicons name="checkmark" size={28} color={colors.accent} />
             </View>
             <Text
               style={[

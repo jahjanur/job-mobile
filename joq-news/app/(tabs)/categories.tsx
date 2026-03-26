@@ -1,53 +1,26 @@
 /**
- * Categories screen — premium grid with Feather icons per category.
+ * Categories screen — grouped sections matching JOQ Albania website.
+ * Each section displays a grid of category cards with Ionicons.
  */
 
 import React, { useCallback } from 'react';
 import {
-  ActivityIndicator,
+  Linking,
   Pressable,
+  SectionList,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
-import { Feather } from '@expo/vector-icons';
-import type { ComponentProps } from 'react';
-import { FlashList } from '@shopify/flash-list';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import type { AppCategory } from '../../src/api/types';
-import { ErrorState } from '../../src/components/states/ErrorState';
-import { useCategories } from '../../src/hooks/useCategories';
+import {
+  CATEGORY_GROUPS,
+  type CategoryEntry,
+} from '../../src/constants/categories';
 import { useTheme } from '../../src/theme';
-
-type FeatherIcon = ComponentProps<typeof Feather>['name'];
-
-const CATEGORY_ICONS: Record<string, FeatherIcon> = {
-  'vec-e-jona': 'star',
-  lajme: 'radio',
-  teknologji: 'cpu',
-  bota: 'globe',
-  argetim: 'film',
-  maqedoni: 'map',
-  sport: 'activity',
-  'persekutimi-ndaj-joq': 'shield',
-  kosova: 'flag',
-  sondazhe: 'bar-chart-2',
-  kuriozitete: 'help-circle',
-  thashetheme: 'message-circle',
-  udhetime: 'map-pin',
-  shendeti: 'heart',
-  'si-te': 'book-open',
-  live: 'video',
-};
-
-function getCategoryIcon(slug: string): FeatherIcon {
-  const key = Object.keys(CATEGORY_ICONS).find((k) =>
-    slug.toLowerCase().includes(k),
-  );
-  return key ? CATEGORY_ICONS[key] : 'file-text';
-}
 
 const ACCENT_COLORS = [
   '#3B82F6', '#8B5CF6', '#EC4899', '#F97316',
@@ -55,119 +28,158 @@ const ACCENT_COLORS = [
   '#14B8A6', '#F59E0B',
 ];
 
+type Section = {
+  title: string;
+  data: CategoryEntry[][];
+};
+
+/** Chunk entries into pairs for a 2-column grid */
+function chunkPairs(entries: CategoryEntry[]): CategoryEntry[][] {
+  const result: CategoryEntry[][] = [];
+  for (let i = 0; i < entries.length; i += 2) {
+    result.push(entries.slice(i, i + 2));
+  }
+  return result;
+}
+
+const sections: Section[] = CATEGORY_GROUPS.map((g) => ({
+  title: g.title,
+  data: chunkPairs(g.entries),
+}));
+
 export default function CategoriesScreen() {
   const { colors, spacing, radius, typography, dark } = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
-  const { data: categories, isLoading, isError, refetch } = useCategories();
+  let globalIndex = 0;
 
-  const renderItem = useCallback(
-    ({ item, index }: { item: AppCategory; index: number }) => {
-      const accentColor = ACCENT_COLORS[index % ACCENT_COLORS.length];
+  const handlePress = useCallback(
+    (entry: CategoryEntry) => {
+      if (entry.externalUrl) {
+        Linking.openURL(entry.externalUrl);
+        return;
+      }
+      if (entry.slug === 'live') {
+        return;
+      }
+      if (entry.slug === 'rreth-nesh') {
+        return;
+      }
+      if (entry.id != null) {
+        router.push(
+          `/category/${entry.id}?name=${encodeURIComponent(entry.name)}`,
+        );
+      }
+    },
+    [router],
+  );
 
-      return (
-        <Pressable
-          onPress={() =>
-            router.push(
-              `/category/${item.id}?name=${encodeURIComponent(item.name)}`,
-            )
-          }
-          style={({ pressed }) => [
-            styles.card,
-            {
-              backgroundColor: pressed
-                ? colors.cardPressed
-                : colors.card,
-              borderRadius: radius.lg,
-              padding: spacing.xl,
-              margin: spacing.xs,
-              flex: 1,
-              borderWidth: dark ? 0 : StyleSheet.hairlineWidth,
-              borderColor: colors.borderLight,
-            },
-          ]}
-        >
-          <View
-            style={[
-              styles.iconCircle,
+  const renderRow = ({ item: row }: { item: CategoryEntry[] }) => (
+    <View style={[styles.row, { paddingHorizontal: spacing.sm }]}>
+      {row.map((entry) => {
+        const colorIndex = globalIndex++;
+        const accentColor = ACCENT_COLORS[colorIndex % ACCENT_COLORS.length];
+
+        return (
+          <Pressable
+            key={entry.slug}
+            onPress={() => handlePress(entry)}
+            style={({ pressed }) => [
+              styles.card,
               {
-                backgroundColor: accentColor + '15',
-                borderRadius: radius.md,
-                width: 44,
-                height: 44,
-                marginBottom: spacing.md,
+                backgroundColor: pressed ? colors.cardPressed : colors.card,
+                borderRadius: radius.lg,
+                padding: spacing.xl,
+                margin: spacing.xs,
+                flex: 1,
+                borderWidth: dark ? 0 : StyleSheet.hairlineWidth,
+                borderColor: colors.borderLight,
               },
             ]}
           >
-            <Feather
-              name={getCategoryIcon(item.slug)}
-              size={20}
-              color={accentColor}
-            />
-          </View>
-          <Text
-            style={[
-              typography.bodyMedium,
-              { color: colors.text, fontSize: 15 },
-            ]}
-            numberOfLines={1}
-          >
-            {item.name}
-          </Text>
-          <Text
-            style={[
-              typography.caption,
-              { color: colors.textTertiary, marginTop: spacing.xxs },
-            ]}
-          >
-            {item.count} {item.count === 1 ? 'artikull' : 'artikuj'}
-          </Text>
-        </Pressable>
-      );
-    },
-    [colors, spacing, radius, typography, router, dark],
+            <View
+              style={[
+                styles.iconCircle,
+                {
+                  backgroundColor: accentColor + '15',
+                  borderRadius: radius.md,
+                  width: 44,
+                  height: 44,
+                  marginBottom: spacing.md,
+                },
+              ]}
+            >
+              {entry.flag ? (
+                <Text style={{ fontSize: 22 }}>{entry.flag}</Text>
+              ) : (
+                <Ionicons name={entry.icon} size={22} color={accentColor} />
+              )}
+            </View>
+            <Text
+              style={[
+                typography.bodyMedium,
+                { color: colors.text, fontSize: 15 },
+              ]}
+              numberOfLines={1}
+            >
+              {entry.name}
+            </Text>
+            {entry.externalUrl && (
+              <View style={[styles.externalBadge, { marginTop: spacing.xxs }]}>
+                <Ionicons
+                  name="open-outline"
+                  size={10}
+                  color={colors.textTertiary}
+                />
+                <Text
+                  style={[
+                    typography.caption,
+                    { color: colors.textTertiary, marginLeft: 3, fontSize: 10 },
+                  ]}
+                >
+                  Web
+                </Text>
+              </View>
+            )}
+          </Pressable>
+        );
+      })}
+      {row.length === 1 && <View style={{ flex: 1, margin: spacing.xs }} />}
+    </View>
   );
-
-  if (isLoading) {
-    return (
-      <View
-        style={[
-          styles.center,
-          { backgroundColor: colors.background, paddingTop: insets.top },
-        ]}
-      >
-        <ActivityIndicator size="large" color={colors.accent} />
-      </View>
-    );
-  }
-
-  if (isError) {
-    return (
-      <View
-        style={[
-          styles.screen,
-          { backgroundColor: colors.background, paddingTop: insets.top },
-        ]}
-      >
-        <ErrorState onRetry={() => refetch()} />
-      </View>
-    );
-  }
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.background }]}>
-      <FlashList
-        data={categories}
-        renderItem={renderItem}
-        keyExtractor={(item) => String(item.id)}
-        numColumns={2}
+      <SectionList
+        sections={sections}
+        keyExtractor={(_, index) => String(index)}
+        renderItem={renderRow}
+        renderSectionHeader={({ section }) => (
+          <View
+            style={{
+              paddingHorizontal: spacing.lg,
+              paddingTop: spacing.lg,
+              paddingBottom: spacing.sm,
+              backgroundColor: colors.background,
+            }}
+          >
+            <Text
+              style={[
+                typography.h3,
+                { color: colors.textSecondary, fontSize: 14, letterSpacing: 0.5 },
+              ]}
+            >
+              {section.title.toUpperCase()}
+            </Text>
+          </View>
+        )}
         ListHeaderComponent={
           <View
             style={{
               paddingTop: insets.top + spacing.lg,
               paddingHorizontal: spacing.lg,
-              paddingBottom: spacing.md,
+              paddingBottom: spacing.xs,
             }}
           >
             <Text
@@ -177,7 +189,6 @@ export default function CategoriesScreen() {
                   color: colors.text,
                   fontSize: 26,
                   letterSpacing: -0.5,
-                  fontWeight: '800',
                 },
               ]}
             >
@@ -194,10 +205,10 @@ export default function CategoriesScreen() {
           </View>
         }
         contentContainerStyle={{
-          paddingHorizontal: spacing.sm,
           paddingBottom: spacing.massive,
         }}
         showsVerticalScrollIndicator={false}
+        stickySectionHeadersEnabled={false}
       />
     </View>
   );
@@ -207,10 +218,8 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
-  center: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+  row: {
+    flexDirection: 'row',
   },
   card: {
     shadowColor: '#000',
@@ -222,5 +231,9 @@ const styles = StyleSheet.create({
   iconCircle: {
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  externalBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 });

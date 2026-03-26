@@ -4,7 +4,7 @@
  * Gracefully handles missing native module (e.g., in Expo Go).
  */
 
-import React, { useState } from 'react';
+import React, { memo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { useTheme } from '../../theme';
@@ -26,7 +26,7 @@ interface AdBannerProps {
   size?: string;
 }
 
-export function AdBanner({ size }: AdBannerProps) {
+export const AdBanner = memo(function AdBanner({ size }: AdBannerProps) {
   const { spacing, colors, typography, radius } = useTheme();
   const [adError, setAdError] = useState(false);
 
@@ -83,7 +83,7 @@ export function AdBanner({ size }: AdBannerProps) {
       />
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {

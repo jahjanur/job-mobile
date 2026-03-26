@@ -130,7 +130,7 @@ export function PostFeed({
       <View style={{ flex: 1, backgroundColor: colors.background }}>
         {ListHeaderComponent}
         <EmptyState
-          icon="file-text"
+          icon="document-text-outline"
           title={emptyTitle}
           message={emptyMessage}
         />
@@ -151,7 +151,7 @@ export function PostFeed({
           onLoadMore();
         }
       }}
-      onEndReachedThreshold={0.5}
+      onEndReachedThreshold={0.3}
       refreshControl={
         <RefreshControl
           refreshing={isRefreshing}
@@ -162,6 +162,7 @@ export function PostFeed({
       }
       contentContainerStyle={{ paddingBottom: spacing.massive }}
       showsVerticalScrollIndicator={false}
+      drawDistance={250}
     />
   );
 }

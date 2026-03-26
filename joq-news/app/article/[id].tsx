@@ -1,19 +1,19 @@
 /**
  * Article detail screen — premium reading experience.
- * Full-bleed hero image, frosted floating buttons with Feather icons,
- * elegant typography, reading progress, and related articles.
+ * Full-bleed hero image, floating header bar with back/bookmark/share,
+ * Hurme4 typography, and related articles.
  */
 
 import React, { useCallback } from 'react';
 import {
-  Platform,
+  Linking,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
@@ -31,19 +31,43 @@ import { useTheme } from '../../src/theme';
 import { formatArticleDate } from '../../src/utils/date';
 import { getImageSource } from '../../src/utils/image';
 import { estimateReadingTime, formatReadingTime } from '../../src/utils/reading';
-import { shareArticle } from '../../src/utils/share';
+import { getArticleWebUrl, shareArticle } from '../../src/utils/share';
+
+function FloatingButton({
+  onPress,
+  icon,
+  color,
+  bgColor,
+}: {
+  onPress: () => void;
+  icon: React.ComponentProps<typeof Ionicons>['name'];
+  color: string;
+  bgColor: string;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={[styles.actionBtn, { backgroundColor: bgColor }]}
+      hitSlop={8}
+    >
+      <Ionicons name={icon} size={19} color={color} />
+    </Pressable>
+  );
+}
 
 export default function ArticleScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const postId = Number(id);
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { colors, spacing, radius, typography, fonts, dark } = useTheme();
+  const { colors, spacing, radius, typography, dark } = useTheme();
 
   const { data: post, isLoading, isError, refetch } = usePost(postId);
 
   const isBookmarked = useBookmarksStore((s) => s.isBookmarked(postId));
   const toggleBookmark = useBookmarksStore((s) => s.toggleBookmark);
+
+  const glassBg = dark ? 'rgba(30,30,30,0.85)' : 'rgba(255,255,255,0.9)';
 
   const handleBookmark = useCallback(() => {
     if (post) {
@@ -59,30 +83,51 @@ export default function ArticleScreen() {
     }
   }, [post]);
 
-  const FloatingBackButton = (
-    <Pressable
-      onPress={() => router.back()}
+  const handleOpenInBrowser = useCallback(() => {
+    if (post) {
+      Linking.openURL(getArticleWebUrl(post));
+    }
+  }, [post]);
+
+  /* ── Floating top bar ─────────────────────────── */
+  const TopBar = (
+    <View
       style={[
-        styles.floatingBtn,
-        {
-          top: insets.top + spacing.sm,
-          left: spacing.lg,
-          backgroundColor: dark
-            ? 'rgba(30,30,30,0.85)'
-            : 'rgba(255,255,255,0.9)',
-          borderRadius: radius.full,
-        },
+        styles.topBar,
+        { top: insets.top + spacing.sm, paddingHorizontal: spacing.lg },
       ]}
-      hitSlop={8}
     >
-      <Feather name="arrow-left" size={20} color={colors.text} />
-    </Pressable>
+      {/* Left: back */}
+      <FloatingButton
+        onPress={() => router.back()}
+        icon="arrow-back"
+        color={colors.text}
+        bgColor={glassBg}
+      />
+
+      {/* Right: actions */}
+      <View style={styles.topBarRight}>
+        <FloatingButton
+          onPress={handleBookmark}
+          icon={isBookmarked ? 'bookmark' : 'bookmark-outline'}
+          color={isBookmarked ? '#FFFFFF' : colors.text}
+          bgColor={isBookmarked ? colors.accent : glassBg}
+        />
+        <FloatingButton
+          onPress={handleShare}
+          icon="share-outline"
+          color={colors.text}
+          bgColor={glassBg}
+        />
+      </View>
+    </View>
   );
 
+  /* ── Loading ──────────────────────────────────── */
   if (isLoading) {
     return (
       <View style={[styles.screen, { backgroundColor: colors.background }]}>
-        {FloatingBackButton}
+        {TopBar}
         <ScrollView>
           <View style={{ height: insets.top + 40 }} />
           <ArticleDetailSkeleton />
@@ -91,10 +136,11 @@ export default function ArticleScreen() {
     );
   }
 
+  /* ── Error ────────────────────────────────────── */
   if (isError || !post) {
     return (
       <View style={[styles.screen, { backgroundColor: colors.background }]}>
-        {FloatingBackButton}
+        {TopBar}
         <ErrorState
           message="Artikulli nuk mund të ngarkohej."
           onRetry={() => refetch()}
@@ -107,63 +153,13 @@ export default function ArticleScreen() {
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.background }]}>
-      {/* Floating back button */}
-      {FloatingBackButton}
-
-      {/* Floating action buttons */}
-      <View
-        style={[
-          styles.actionsRow,
-          {
-            top: insets.top + spacing.sm,
-            right: spacing.lg,
-          },
-        ]}
-      >
-        <Pressable
-          onPress={handleBookmark}
-          style={[
-            styles.floatingBtn,
-            {
-              backgroundColor: isBookmarked
-                ? colors.accent
-                : dark
-                  ? 'rgba(30,30,30,0.85)'
-                  : 'rgba(255,255,255,0.9)',
-              borderRadius: radius.full,
-              marginRight: spacing.sm,
-            },
-          ]}
-          hitSlop={8}
-        >
-          <Feather
-            name="bookmark"
-            size={18}
-            color={isBookmarked ? '#FFFFFF' : colors.text}
-          />
-        </Pressable>
-        <Pressable
-          onPress={handleShare}
-          style={[
-            styles.floatingBtn,
-            {
-              backgroundColor: dark
-                ? 'rgba(30,30,30,0.85)'
-                : 'rgba(255,255,255,0.9)',
-              borderRadius: radius.full,
-            },
-          ]}
-          hitSlop={8}
-        >
-          <Feather name="share-2" size={18} color={colors.text} />
-        </Pressable>
-      </View>
+      {TopBar}
 
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: spacing.massive + insets.bottom }}
       >
-        {/* Hero image with gradient overlay */}
+        {/* ── Hero image ───────────────────────────── */}
         <View style={styles.heroContainer}>
           <Image
             source={getImageSource(post.featuredImageLarge ?? post.featuredImage)}
@@ -177,12 +173,18 @@ export default function ArticleScreen() {
           />
         </View>
 
-        {/* Article header */}
+        {/* ── Article header ───────────────────────── */}
         <View style={{ padding: spacing.lg }}>
-          {/* Category + reading time row */}
+          {/* Category + reading time */}
           <View style={styles.badgeRow}>
             {post.categoryNames[0] && (
-              <View
+              <Pressable
+                onPress={() =>
+                  post.categoryIds[0] &&
+                  router.push(
+                    `/category/${post.categoryIds[0]}?name=${encodeURIComponent(post.categoryNames[0])}`,
+                  )
+                }
                 style={[
                   styles.categoryBadge,
                   {
@@ -202,12 +204,12 @@ export default function ArticleScreen() {
                 >
                   {post.categoryNames[0].toUpperCase()}
                 </Text>
-              </View>
+              </Pressable>
             )}
-            <View style={styles.readingBadge}>
-              <Feather
-                name="clock"
-                size={12}
+            <View style={styles.metaItem}>
+              <Ionicons
+                name="time-outline"
+                size={13}
                 color={colors.textTertiary}
                 style={{ marginRight: 4 }}
               />
@@ -223,7 +225,6 @@ export default function ArticleScreen() {
               typography.heroTitle,
               {
                 color: colors.text,
-                fontFamily: fonts.serif,
                 marginTop: spacing.md,
                 marginBottom: spacing.lg,
                 lineHeight: 34,
@@ -233,15 +234,12 @@ export default function ArticleScreen() {
             {post.title}
           </Text>
 
-          {/* Author + date meta */}
-          <View style={styles.metaRow}>
+          {/* Author + date */}
+          <View style={styles.authorRow}>
             {post.authorAvatar ? (
               <Image
                 source={{ uri: post.authorAvatar }}
-                style={[
-                  styles.avatar,
-                  { borderRadius: radius.full, marginRight: spacing.md },
-                ]}
+                style={[styles.avatar, { borderRadius: radius.full, marginRight: spacing.md }]}
                 contentFit="cover"
               />
             ) : (
@@ -255,7 +253,7 @@ export default function ArticleScreen() {
                   },
                 ]}
               >
-                <Feather name="user" size={18} color={colors.textTertiary} />
+                <Ionicons name="person-outline" size={18} color={colors.textTertiary} />
               </View>
             )}
             <View style={{ flex: 1 }}>
@@ -263,32 +261,80 @@ export default function ArticleScreen() {
                 {post.authorName}
               </Text>
               <Text
-                style={[
-                  typography.caption,
-                  { color: colors.textTertiary, marginTop: 2 },
-                ]}
+                style={[typography.caption, { color: colors.textTertiary, marginTop: 2 }]}
               >
                 {formatArticleDate(post.date)}
               </Text>
             </View>
           </View>
 
-          {/* Divider */}
+          {/* ── Action bar ────────────────────────── */}
           <View
             style={[
-              styles.divider,
+              styles.inlineActions,
               {
-                backgroundColor: colors.borderLight,
-                marginVertical: spacing.xxl,
+                marginTop: spacing.xl,
+                paddingVertical: spacing.md,
+                borderTopWidth: StyleSheet.hairlineWidth,
+                borderBottomWidth: StyleSheet.hairlineWidth,
+                borderColor: colors.borderLight,
               },
             ]}
-          />
+          >
+            <Pressable
+              onPress={handleBookmark}
+              style={styles.inlineActionBtn}
+            >
+              <Ionicons
+                name={isBookmarked ? 'bookmark' : 'bookmark-outline'}
+                size={20}
+                color={isBookmarked ? colors.accent : colors.textSecondary}
+              />
+              <Text
+                style={[
+                  typography.caption,
+                  {
+                    color: isBookmarked ? colors.accent : colors.textSecondary,
+                    marginLeft: spacing.xs,
+                  },
+                ]}
+              >
+                {isBookmarked ? 'Ruajtur' : 'Ruaj'}
+              </Text>
+            </Pressable>
 
-          {/* Article body (rendered HTML) */}
-          <ArticleContent html={post.content} />
+            <Pressable onPress={handleShare} style={styles.inlineActionBtn}>
+              <Ionicons name="share-social-outline" size={20} color={colors.textSecondary} />
+              <Text
+                style={[
+                  typography.caption,
+                  { color: colors.textSecondary, marginLeft: spacing.xs },
+                ]}
+              >
+                Ndaj
+              </Text>
+            </Pressable>
+
+            <Pressable onPress={handleOpenInBrowser} style={styles.inlineActionBtn}>
+                <Ionicons name="open-outline" size={20} color={colors.textSecondary} />
+                <Text
+                  style={[
+                    typography.caption,
+                    { color: colors.textSecondary, marginLeft: spacing.xs },
+                  ]}
+                >
+                  Hap në web
+                </Text>
+              </Pressable>
+          </View>
+
+          {/* ── Article body ──────────────────────── */}
+          <View style={{ marginTop: spacing.xl }}>
+            <ArticleContent html={post.content} />
+          </View>
         </View>
 
-        {/* Article ad banner */}
+        {/* Ad banner */}
         <AdBanner />
 
         {/* Related articles */}
@@ -305,6 +351,31 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
+  topBar: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    zIndex: 20,
+  },
+  topBarRight: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  actionBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 9999,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 4,
+  },
   heroContainer: {
     position: 'relative',
   },
@@ -318,24 +389,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     height: 120,
   },
-  floatingBtn: {
-    position: 'absolute',
-    width: 42,
-    height: 42,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
-    elevation: 4,
-    zIndex: 10,
-  },
-  actionsRow: {
-    position: 'absolute',
-    flexDirection: 'row',
-    zIndex: 10,
-  },
   badgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -343,11 +396,11 @@ const styles = StyleSheet.create({
   categoryBadge: {
     alignSelf: 'flex-start',
   },
-  readingBadge: {
+  metaItem: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  metaRow: {
+  authorRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -361,7 +414,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  divider: {
-    height: StyleSheet.hairlineWidth,
+  inlineActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  inlineActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
   },
 });

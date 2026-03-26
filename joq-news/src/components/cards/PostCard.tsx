@@ -3,9 +3,9 @@
  * Clean layout with rounded thumbnail, subtle divider, and reading metadata.
  */
 
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 
@@ -23,7 +23,7 @@ interface PostCardProps {
 export const PostCard = memo(function PostCard({ post }: PostCardProps) {
   const { colors, spacing, radius, typography, dark } = useTheme();
   const router = useRouter();
-  const readTime = estimateReadingTime(post.content);
+  const readTime = useMemo(() => estimateReadingTime(post.content), [post.id]);
 
   return (
     <PressableScale
@@ -76,7 +76,7 @@ export const PostCard = memo(function PostCard({ post }: PostCardProps) {
               {formatPostDateWithTime(post.date)}
             </Text>
             <View style={[styles.dot, { backgroundColor: colors.textTertiary }]} />
-            <Feather name="clock" size={10} color={colors.textTertiary} />
+            <Ionicons name="time-outline" size={11} color={colors.textTertiary} />
             <Text
               style={[
                 typography.caption,

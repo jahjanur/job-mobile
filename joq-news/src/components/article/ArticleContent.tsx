@@ -1,7 +1,7 @@
 /**
  * Renders WordPress HTML article content in a native-friendly way.
- * Uses react-native-render-html with custom tag styles matching
- * the app's theme tokens for a premium reading experience.
+ * Uses react-native-render-html with Hurme4 font family matching
+ * the JOQ Albania website for a consistent reading experience.
  */
 
 import React, { useMemo } from 'react';
@@ -12,6 +12,7 @@ import RenderHtml, {
 } from 'react-native-render-html';
 
 import { useTheme } from '../../theme';
+import { hurme4 } from '../../theme/typography';
 
 interface ArticleContentProps {
   html: string;
@@ -29,29 +30,44 @@ export function ArticleContent({ html }: ArticleContentProps) {
         color: colors.text,
         fontSize: typography.body.fontSize,
         lineHeight: typography.body.lineHeight * 1.4,
-        fontFamily: fonts.serif,
+        fontFamily: hurme4.regular,
       },
       p: {
         marginBottom: spacing.lg,
         color: colors.text,
+        fontFamily: hurme4.regular,
+      },
+      strong: {
+        fontFamily: hurme4.bold,
+        fontWeight: '700',
+      },
+      b: {
+        fontFamily: hurme4.bold,
+        fontWeight: '700',
+      },
+      em: {
+        fontStyle: 'italic',
       },
       h1: {
         fontSize: typography.h1.fontSize,
-        fontWeight: typography.h1.fontWeight,
+        fontFamily: hurme4.bold,
+        fontWeight: '700',
         color: colors.text,
         marginBottom: spacing.md,
         marginTop: spacing.xxl,
       },
       h2: {
         fontSize: typography.h2.fontSize,
-        fontWeight: typography.h2.fontWeight,
+        fontFamily: hurme4.bold,
+        fontWeight: '700',
         color: colors.text,
         marginBottom: spacing.md,
         marginTop: spacing.xl,
       },
       h3: {
         fontSize: typography.h3.fontSize,
-        fontWeight: typography.h3.fontWeight,
+        fontFamily: hurme4.semiBold,
+        fontWeight: '600',
         color: colors.text,
         marginBottom: spacing.sm,
         marginTop: spacing.xl,
@@ -67,6 +83,7 @@ export function ArticleContent({ html }: ArticleContentProps) {
         marginVertical: spacing.lg,
         fontStyle: 'italic',
         color: colors.textSecondary,
+        fontFamily: hurme4.light,
       },
       img: {
         borderRadius: 10,
@@ -83,9 +100,11 @@ export function ArticleContent({ html }: ArticleContentProps) {
       li: {
         marginBottom: spacing.sm,
         color: colors.text,
+        fontFamily: hurme4.regular,
       },
       figcaption: {
         fontSize: typography.caption.fontSize,
+        fontFamily: hurme4.light,
         color: colors.textTertiary,
         textAlign: 'center',
         marginTop: spacing.xs,
@@ -112,6 +131,7 @@ export function ArticleContent({ html }: ArticleContentProps) {
       th: {
         backgroundColor: colors.surface,
         padding: spacing.sm,
+        fontFamily: hurme4.semiBold,
         fontWeight: '600',
       },
       td: {
@@ -120,11 +140,20 @@ export function ArticleContent({ html }: ArticleContentProps) {
         borderColor: colors.border,
       },
     }),
-    [colors, spacing, typography, fonts],
+    [colors, spacing, typography],
   );
 
   const systemFonts = useMemo(
-    () => [...defaultSystemFonts, fonts.serif, fonts.sans],
+    () => [
+      ...defaultSystemFonts,
+      hurme4.thin,
+      hurme4.light,
+      hurme4.regular,
+      hurme4.semiBold,
+      hurme4.bold,
+      hurme4.black,
+      fonts.serif,
+    ],
     [fonts],
   );
 

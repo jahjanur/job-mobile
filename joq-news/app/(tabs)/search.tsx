@@ -1,5 +1,5 @@
 /**
- * Search screen — premium design with Feather icons,
+ * Search screen — premium design with Ionicons,
  * animated search bar, and recent search chips.
  */
 
@@ -11,7 +11,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { PostFeed } from '../../src/components/feed/PostFeed';
@@ -110,8 +110,8 @@ export default function SearchScreen() {
             },
           ]}
         >
-          <Feather
-            name="search"
+          <Ionicons
+            name="search-outline"
             size={18}
             color={colors.textTertiary}
             style={{ marginRight: spacing.md }}
@@ -135,7 +135,7 @@ export default function SearchScreen() {
           />
           {searchInput.length > 0 && (
             <Pressable onPress={() => setSearchInput('')} hitSlop={12}>
-              <Feather name="x" size={18} color={colors.textTertiary} />
+              <Ionicons name="close" size={18} color={colors.textTertiary} />
             </Pressable>
           )}
         </View>
@@ -169,9 +169,9 @@ export default function SearchScreen() {
                     { paddingVertical: spacing.md },
                   ]}
                 >
-                  <Feather
-                    name="clock"
-                    size={14}
+                  <Ionicons
+                    name="time-outline"
+                    size={15}
                     color={colors.textTertiary}
                     style={{ marginRight: spacing.md }}
                   />
@@ -186,7 +186,7 @@ export default function SearchScreen() {
                   hitSlop={8}
                   style={{ padding: spacing.sm }}
                 >
-                  <Feather name="x" size={14} color={colors.textTertiary} />
+                  <Ionicons name="close" size={14} color={colors.textTertiary} />
                 </Pressable>
               </View>
             ))}
@@ -221,7 +221,7 @@ export default function SearchScreen() {
               },
             ]}
           >
-            <Feather name="search" size={28} color={colors.textTertiary} />
+            <Ionicons name="search-outline" size={28} color={colors.textTertiary} />
           </View>
           <Text
             style={[

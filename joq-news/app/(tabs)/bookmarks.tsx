@@ -1,11 +1,11 @@
 /**
- * Bookmarks screen — premium design with Feather icons.
+ * Bookmarks screen — premium design with Ionicons.
  * Displays locally saved articles with an elegant empty state.
  */
 
 import React, { useCallback } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { FlashList } from '@shopify/flash-list';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -50,7 +50,7 @@ export default function BookmarksScreen() {
             Ruajtur
           </Text>
           <EmptyState
-            icon="bookmark"
+            icon="bookmark-outline"
             title="Asnjë artikull i ruajtur"
             message="Ruaj artikujt për t'i lexuar më vonë, edhe pa internet."
           />
@@ -109,7 +109,7 @@ export default function BookmarksScreen() {
                       },
                     ]}
                   >
-                    <Feather name="trash-2" size={16} color={colors.textTertiary} />
+                    <Ionicons name="trash-outline" size={16} color={colors.textTertiary} />
                   </Pressable>
                 )}
               </View>

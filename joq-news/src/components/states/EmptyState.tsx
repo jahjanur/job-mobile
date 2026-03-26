@@ -1,20 +1,20 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import type { ComponentProps } from 'react';
 
 import { useTheme } from '../../theme';
 
-type FeatherIcon = ComponentProps<typeof Feather>['name'];
+type IonIcon = ComponentProps<typeof Ionicons>['name'];
 
 interface EmptyStateProps {
-  icon?: FeatherIcon;
+  icon?: IonIcon;
   title: string;
   message: string;
 }
 
 export function EmptyState({
-  icon = 'inbox',
+  icon = 'file-tray-outline',
   title,
   message,
 }: EmptyStateProps) {
@@ -31,7 +31,7 @@ export function EmptyState({
           },
         ]}
       >
-        <Feather name={icon} size={28} color={colors.textTertiary} />
+        <Ionicons name={icon} size={28} color={colors.textTertiary} />
       </View>
       <Text
         style={[
