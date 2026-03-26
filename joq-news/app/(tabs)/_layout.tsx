@@ -1,5 +1,5 @@
 /**
- * Tab bar — filled icons with proper pill background spacing.
+ * Tab bar — filled icons + label inside a single pill background.
  */
 
 import React, { useEffect } from 'react';
@@ -19,11 +19,7 @@ import { useTheme } from '../../src/theme';
 
 type Ion = ComponentProps<typeof Ionicons>['name'];
 
-const TABS: {
-  name: string;
-  icon: Ion;
-  label: string;
-}[] = [
+const TABS: { name: string; icon: Ion; label: string }[] = [
   { name: 'index', icon: 'home', label: 'Ballina' },
   { name: 'categories', icon: 'grid', label: 'Tema' },
   { name: 'search', icon: 'search', label: 'Kerko' },
@@ -46,41 +42,33 @@ function TabItem({
   inactiveColor: string;
   dark: boolean;
 }) {
-  const pillScale = useSharedValue(0);
+  const pillOpacity = useSharedValue(0);
 
   useEffect(() => {
-    pillScale.value = withSpring(focused ? 1 : 0, { damping: 16, stiffness: 180 });
+    pillOpacity.value = withSpring(focused ? 1 : 0, { damping: 16, stiffness: 180 });
   }, [focused]);
 
   const pillStyle = useAnimatedStyle(() => ({
-    opacity: pillScale.value,
-    transform: [
-      { scaleX: 0.5 + pillScale.value * 0.5 },
-      { scaleY: 0.8 + pillScale.value * 0.2 },
-    ],
+    opacity: pillOpacity.value,
   }));
 
   const color = focused ? accentColor : inactiveColor;
 
   return (
     <View style={styles.tabItem}>
-      {/* Pill background — only behind icon */}
-      <View style={styles.iconRow}>
-        <Animated.View
-          style={[
-            styles.pill,
-            {
-              backgroundColor: dark
-                ? accentColor + '25'
-                : accentColor + '15',
-            },
-            pillStyle,
-          ]}
-        />
-        <Ionicons name={icon} size={20} color={color} />
-      </View>
-
-      {/* Label */}
+      {/* Pill wraps both icon and label */}
+      <Animated.View
+        style={[
+          styles.pill,
+          {
+            backgroundColor: dark
+              ? accentColor + '20'
+              : accentColor + '12',
+          },
+          pillStyle,
+        ]}
+      />
+      <Ionicons name={icon} size={18} color={color} />
       <Text
         style={[
           styles.label,
@@ -104,7 +92,7 @@ export default function TabsLayout() {
   const inactive = dark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.3)';
   const bg = dark ? '#101012' : '#FFFFFF';
   const borderColor = dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
-  const bottomSafe = Platform.OS === 'ios' ? Math.max(insets.bottom - 6, 0) : 4;
+  const bottomSafe = Platform.OS === 'ios' ? insets.bottom : 6;
 
   return (
     <Tabs
@@ -113,15 +101,17 @@ export default function TabsLayout() {
         tabBarShowLabel: false,
         tabBarStyle: {
           backgroundColor: bg,
-          height: 60 + bottomSafe,
+          height: 54 + bottomSafe,
+          paddingBottom: bottomSafe,
           borderTopWidth: StyleSheet.hairlineWidth,
           borderTopColor: borderColor,
           elevation: 0,
           shadowOpacity: 0,
-          paddingBottom: bottomSafe,
         },
         tabBarItemStyle: {
-          height: 60,
+          height: 54,
+          justifyContent: 'center',
+          alignItems: 'center',
         },
       }}
     >
@@ -149,26 +139,20 @@ export default function TabsLayout() {
 
 const styles = StyleSheet.create({
   tabItem: {
-    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    height: 60,
-    gap: 4,
-  },
-  iconRow: {
-    width: 56,
-    height: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 62,
+    height: 44,
+    borderRadius: 12,
+    overflow: 'hidden',
   },
   pill: {
-    position: 'absolute',
-    width: 56,
-    height: 28,
-    borderRadius: 14,
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 12,
   },
   label: {
-    fontSize: 10,
-    letterSpacing: 0.1,
+    fontSize: 9,
+    marginTop: 2,
+    letterSpacing: 0.2,
   },
 });
