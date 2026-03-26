@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
-import * as Haptics from 'expo-haptics';
 
+import { triggerHaptic } from '../../hooks/useHaptic';
 import { useTheme } from '../../theme';
 
 interface IconButtonProps {
@@ -23,7 +23,7 @@ export function IconButton({
 
   const handlePress = () => {
     if (haptic) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      triggerHaptic('light');
     }
     onPress();
   };

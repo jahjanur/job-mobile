@@ -1,6 +1,6 @@
 /**
  * Pressable wrapper that applies a subtle scale animation on press.
- * Provides the premium "press-in" micro-interaction used across all cards.
+ * Respects the "reduce motion" user preference — skips animation if enabled.
  */
 
 import React, { type ReactNode } from 'react';
@@ -12,6 +12,8 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
+
+import { usePreferencesStore } from '../../store/preferencesStore';
 
 interface PressableScaleProps {
   onPress: () => void;
@@ -29,13 +31,18 @@ export function PressableScale({
   scaleTo = 0.97,
 }: PressableScaleProps) {
   const scale = useSharedValue(1);
+  const reduceMotion = usePreferencesStore((s) => s.reduceMotion);
 
   const gesture = Gesture.Tap()
     .onBegin(() => {
-      scale.value = withSpring(scaleTo, SPRING_CONFIG);
+      if (!reduceMotion) {
+        scale.value = withSpring(scaleTo, SPRING_CONFIG);
+      }
     })
     .onFinalize((_, success) => {
-      scale.value = withSpring(1, SPRING_CONFIG);
+      if (!reduceMotion) {
+        scale.value = withSpring(1, SPRING_CONFIG);
+      }
       if (success) {
         runOnJS(onPress)();
       }

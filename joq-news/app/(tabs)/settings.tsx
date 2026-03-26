@@ -465,7 +465,7 @@ export default function SettingsScreen() {
             Kjo është madhësia aktuale e shkronjave për tekstin e artikujve.
           </Text>
         </View>
-        <SettingRow label="Redukto lëvizjet" icon="contract-outline">
+        <SettingRow label="Redukto animacionet" icon="contract-outline">
           <Switch
             value={reduceMotion}
             onValueChange={setReduceMotion}
@@ -473,7 +473,21 @@ export default function SettingsScreen() {
             thumbColor="#FFFFFF"
           />
         </SettingRow>
-        <SettingRow label="Dridhje haptike" icon="phone-portrait-outline" isLast>
+        {reduceMotion && (
+          <View
+            style={{
+              paddingHorizontal: spacing.sm,
+              paddingBottom: spacing.md,
+              borderBottomWidth: StyleSheet.hairlineWidth,
+              borderBottomColor: colors.borderLight,
+            }}
+          >
+            <Text style={[typography.caption, { color: colors.textTertiary }]}>
+              Caktivizon efektet e shkallezimit kur shtypni kartat e artikujve.
+            </Text>
+          </View>
+        )}
+        <SettingRow label="Dridhje kur shtypni" icon="phone-portrait-outline" isLast>
           <Switch
             value={hapticFeedback}
             onValueChange={setHapticFeedback}
@@ -481,6 +495,13 @@ export default function SettingsScreen() {
             thumbColor="#FFFFFF"
           />
         </SettingRow>
+        {!hapticFeedback && (
+          <View style={{ paddingHorizontal: spacing.sm, paddingBottom: spacing.md }}>
+            <Text style={[typography.caption, { color: colors.textTertiary }]}>
+              Telefoni nuk do te dridhej kur ruani ose ndani artikuj.
+            </Text>
+          </View>
+        )}
       </Card>
 
       {/* ═══════════════════════════════════════ */}

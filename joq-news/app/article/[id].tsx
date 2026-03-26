@@ -18,7 +18,6 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import * as Haptics from 'expo-haptics';
 import * as Speech from 'expo-speech';
 import { useSharedValue } from 'react-native-reanimated';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -30,6 +29,7 @@ import { RelatedArticles } from '../../src/components/article/RelatedArticles';
 import { ArticleDetailSkeleton } from '../../src/components/loaders/SkeletonBox';
 import { ErrorState } from '../../src/components/states/ErrorState';
 import { ReadingProgressBar } from '../../src/components/ui/ReadingProgressBar';
+import { triggerHaptic } from '../../src/hooks/useHaptic';
 import { usePost } from '../../src/hooks/usePost';
 import { useBookmarksStore } from '../../src/store/bookmarksStore';
 import { useTheme } from '../../src/theme';
@@ -88,14 +88,14 @@ export default function ArticleScreen() {
 
   const handleBookmark = useCallback(() => {
     if (post) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      triggerHaptic('medium');
       toggleBookmark(post);
     }
   }, [post, toggleBookmark]);
 
   const handleShare = useCallback(() => {
     if (post) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      triggerHaptic('light');
       shareArticle(post);
     }
   }, [post]);

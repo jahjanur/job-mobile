@@ -7,7 +7,7 @@ import React, { memo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import * as Haptics from 'expo-haptics';
+import { triggerHaptic } from '../../hooks/useHaptic';
 import { useRouter } from 'expo-router';
 
 import { type BookmarkEntry, useBookmarksStore } from '../../store/bookmarksStore';
@@ -28,7 +28,7 @@ export const BookmarkCard = memo(function BookmarkCard({
   const removeBookmark = useBookmarksStore((s) => s.removeBookmark);
 
   const handleRemove = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    triggerHaptic('light');
     removeBookmark(bookmark.id);
   };
 
