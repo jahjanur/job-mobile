@@ -5,7 +5,7 @@
  * and paginated latest feed — each section visually distinct.
  */
 
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   RefreshControl,
@@ -15,6 +15,13 @@ import {
   View,
 } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+} from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import type { ComponentProps } from 'react';
 import { Image } from 'expo-image';
@@ -57,6 +64,17 @@ export default function HomeScreen() {
   const router = useRouter();
 
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
+
+  // Live dot pulse
+  const livePulse = useSharedValue(1);
+  useEffect(() => {
+    livePulse.value = withRepeat(
+      withTiming(0.3, { duration: 700, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true,
+    );
+  }, []);
+  const liveDotStyle = useAnimatedStyle(() => ({ opacity: livePulse.value }));
 
   const {
     data,
@@ -119,6 +137,22 @@ export default function HomeScreen() {
         >
           <AppLogo width={110} />
           <View style={styles.headerActions}>
+            {/* Live TV button */}
+            <TouchableOpacity
+              onPress={() => router.push('/live')}
+              activeOpacity={0.6}
+              style={[
+                styles.liveBtn,
+                {
+                  backgroundColor: colors.accent,
+                  borderRadius: radius.full,
+                },
+              ]}
+              hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+            >
+              <Animated.View style={[styles.liveDotHeader, liveDotStyle]} />
+              <Text style={styles.liveBtnText}>LIVE</Text>
+            </TouchableOpacity>
             <TouchableOpacity
               onPress={() => router.navigate('/search')}
               activeOpacity={0.6}
@@ -127,6 +161,7 @@ export default function HomeScreen() {
                 {
                   backgroundColor: colors.surface,
                   borderRadius: radius.full,
+                  marginLeft: spacing.sm,
                   borderWidth: dark ? 0 : StyleSheet.hairlineWidth,
                   borderColor: colors.borderLight,
                 },
@@ -828,6 +863,25 @@ const styles = StyleSheet.create({
     height: 38,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  liveBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 34,
+    paddingHorizontal: 10,
+  },
+  liveDotHeader: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#FFF',
+    marginRight: 5,
+  },
+  liveBtnText: {
+    color: '#FFF',
+    fontWeight: '700',
+    fontSize: 11,
+    letterSpacing: 0.8,
   },
   sectionRow: {
     flexDirection: 'row',
