@@ -1,16 +1,18 @@
 /**
- * Tab bar — floating capsule with glow effect on active tab.
+ * Tab bar — glassmorphism floating bar with blur effect.
  */
 
 import React, { useEffect } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { ComponentProps } from 'react';
+import { BlurView } from 'expo-blur';
 import { Tabs } from 'expo-router';
 import Animated, {
   Easing,
   useAnimatedStyle,
   useSharedValue,
+  withSpring,
   withTiming,
 } from 'react-native-reanimated';
 
@@ -31,75 +33,93 @@ function TabIcon({
   tint: string;
   muted: string;
 }) {
-  const scale = useSharedValue(0.85);
-  const glowOpacity = useSharedValue(0);
+  const translateY = useSharedValue(0);
+  const dotScale = useSharedValue(0);
 
   useEffect(() => {
-    scale.value = withTiming(focused ? 1 : 0.85, {
+    translateY.value = withSpring(focused ? -2 : 0, { damping: 14, stiffness: 200 });
+    dotScale.value = withTiming(focused ? 1 : 0, {
       duration: 200,
-      easing: Easing.out(Easing.cubic),
-    });
-    glowOpacity.value = withTiming(focused ? 1 : 0, {
-      duration: 300,
       easing: Easing.out(Easing.cubic),
     });
   }, [focused]);
 
   const iconStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
+    transform: [{ translateY: translateY.value }],
   }));
 
-  const glowStyle = useAnimatedStyle(() => ({
-    opacity: glowOpacity.value * 0.25,
-    transform: [{ scale: 1 + glowOpacity.value * 0.3 }],
+  const dotStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: dotScale.value }],
+    opacity: dotScale.value,
   }));
 
   return (
     <View style={styles.iconWrap}>
-      {/* Glow circle behind active icon */}
-      <Animated.View
-        style={[
-          styles.glow,
-          { backgroundColor: tint },
-          glowStyle,
-        ]}
-      />
       <Animated.View style={iconStyle}>
         <Ionicons
           name={focused ? filled : outline}
-          size={24}
+          size={22}
           color={focused ? tint : muted}
         />
       </Animated.View>
+      <Animated.View
+        style={[styles.dot, { backgroundColor: tint }, dotStyle]}
+      />
     </View>
   );
 }
 
 export default function TabsLayout() {
-  const { colors, dark, spacing } = useTheme();
+  const { colors, dark } = useTheme();
+
+  const muted = dark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.3)';
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
+        tabBarBackground: () => (
+          <View style={styles.barBg}>
+            <BlurView
+              intensity={dark ? 40 : 80}
+              tint={dark ? 'dark' : 'light'}
+              style={StyleSheet.absoluteFill}
+            />
+            <View
+              style={[
+                StyleSheet.absoluteFill,
+                {
+                  backgroundColor: dark
+                    ? 'rgba(18,18,20,0.75)'
+                    : 'rgba(255,255,255,0.7)',
+                },
+              ]}
+            />
+          </View>
+        ),
         tabBarStyle: {
           position: 'absolute',
-          bottom: Platform.OS === 'ios' ? 28 : 14,
-          left: 20,
-          right: 20,
-          height: 62,
-          backgroundColor: dark ? '#1A1A1C' : '#FFFFFF',
-          borderRadius: 22,
+          bottom: Platform.OS === 'ios' ? 24 : 12,
+          left: 16,
+          right: 16,
+          height: 58,
+          borderRadius: 20,
           borderTopWidth: 0,
           elevation: 0,
+          backgroundColor: 'transparent',
           shadowColor: dark ? '#E31E24' : '#000',
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: dark ? 0.15 : 0.1,
-          shadowRadius: 20,
-          paddingHorizontal: 6,
+          shadowOffset: { width: 0, height: 8 },
+          shadowOpacity: dark ? 0.2 : 0.08,
+          shadowRadius: 24,
+          overflow: 'hidden',
           borderWidth: 1,
-          borderColor: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+          borderColor: dark
+            ? 'rgba(255,255,255,0.08)'
+            : 'rgba(0,0,0,0.06)',
+        },
+        tabBarItemStyle: {
+          paddingTop: 4,
         },
       }}
     >
@@ -107,7 +127,7 @@ export default function TabsLayout() {
         name="index"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon filled="home" outline="home-outline" focused={focused} tint={colors.accent} muted={dark ? '#555' : '#B0B0B0'} />
+            <TabIcon filled="home" outline="home-outline" focused={focused} tint={colors.accent} muted={muted} />
           ),
         }}
       />
@@ -115,7 +135,7 @@ export default function TabsLayout() {
         name="categories"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon filled="grid" outline="grid-outline" focused={focused} tint={colors.accent} muted={dark ? '#555' : '#B0B0B0'} />
+            <TabIcon filled="grid" outline="grid-outline" focused={focused} tint={colors.accent} muted={muted} />
           ),
         }}
       />
@@ -123,7 +143,7 @@ export default function TabsLayout() {
         name="search"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon filled="search" outline="search-outline" focused={focused} tint={colors.accent} muted={dark ? '#555' : '#B0B0B0'} />
+            <TabIcon filled="search" outline="search-outline" focused={focused} tint={colors.accent} muted={muted} />
           ),
         }}
       />
@@ -131,7 +151,7 @@ export default function TabsLayout() {
         name="bookmarks"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon filled="bookmark" outline="bookmark-outline" focused={focused} tint={colors.accent} muted={dark ? '#555' : '#B0B0B0'} />
+            <TabIcon filled="bookmark" outline="bookmark-outline" focused={focused} tint={colors.accent} muted={muted} />
           ),
         }}
       />
@@ -139,7 +159,7 @@ export default function TabsLayout() {
         name="settings"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon filled="menu" outline="menu-outline" focused={focused} tint={colors.accent} muted={dark ? '#555' : '#B0B0B0'} />
+            <TabIcon filled="ellipsis-horizontal" outline="ellipsis-horizontal" focused={focused} tint={colors.accent} muted={muted} />
           ),
         }}
       />
@@ -148,16 +168,20 @@ export default function TabsLayout() {
 }
 
 const styles = StyleSheet.create({
+  barBg: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
   iconWrap: {
-    width: 48,
-    height: 48,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  glow: {
-    position: 'absolute',
-    width: 40,
     height: 40,
-    borderRadius: 20,
+  },
+  dot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+    marginTop: 4,
   },
 });
