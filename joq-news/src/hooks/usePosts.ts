@@ -3,7 +3,7 @@
  * Prefetches images for the next page for smoother scrolling.
  */
 
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
 
 import { fetchPosts } from '../api/wordpress';
 import { Config } from '../constants/config';
@@ -39,5 +39,6 @@ export function usePosts(options: UsePostsOptions = {}) {
       return lastPageParam + 1;
     },
     enabled,
+    placeholderData: keepPreviousData,
   });
 }

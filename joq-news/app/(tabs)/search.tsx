@@ -12,6 +12,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { PostFeed } from '../../src/components/feed/PostFeed';
@@ -25,6 +26,7 @@ import { useTheme } from '../../src/theme';
 export default function SearchScreen() {
   const { colors, spacing, radius, typography, dark } = useTheme();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
 
   const recentSearches = usePreferencesStore((s) => s.recentSearches);
   const addRecentSearch = usePreferencesStore((s) => s.addRecentSearch);
@@ -209,7 +211,6 @@ export default function SearchScreen() {
   );
 
   if (showEmpty) {
-    const router = require('expo-router').useRouter();
     const suggestedTopics = WP_CATEGORIES.slice(0, 8);
 
     return (

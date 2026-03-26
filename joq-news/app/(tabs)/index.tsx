@@ -121,7 +121,7 @@ export default function HomeScreen() {
           <AppLogo width={110} />
           <View style={styles.headerActions}>
             <Pressable
-              onPress={() => router.push('/(tabs)/search')}
+              onPress={() => router.navigate('/search')}
               style={[
                 styles.headerBtn,
                 {
@@ -136,7 +136,7 @@ export default function HomeScreen() {
               <Ionicons name="search-outline" size={18} color={colors.icon} />
             </Pressable>
             <Pressable
-              onPress={() => router.push('/(tabs)/settings')}
+              onPress={() => router.navigate('/settings')}
               style={[
                 styles.headerBtn,
                 {
@@ -757,6 +757,7 @@ export default function HomeScreen() {
   }, [
     isLoading,
     selectedCategoryId,
+    allPosts,
     heroPost,
     trendingPosts,
     spotlightPost,
