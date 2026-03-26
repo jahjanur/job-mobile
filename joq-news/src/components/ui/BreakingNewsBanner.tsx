@@ -4,7 +4,8 @@
  */
 
 import React, { memo, useEffect } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -43,7 +44,8 @@ export const BreakingNewsBanner = memo(function BreakingNewsBanner({
   }));
 
   return (
-    <Pressable
+    <TouchableOpacity
+      activeOpacity={0.7}
       onPress={() => router.push(`/article/${post.id}`)}
       style={[
         styles.container,
@@ -93,7 +95,7 @@ export const BreakingNewsBanner = memo(function BreakingNewsBanner({
       >
         {post.title}
       </Text>
-    </Pressable>
+    </TouchableOpacity>
   );
 });
 
