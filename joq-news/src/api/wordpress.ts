@@ -3,9 +3,6 @@
  * Each function maps to a specific endpoint and returns clean
  * typed data via the mapper layer. Pagination metadata is
  * preserved for infinite-scroll queries.
- *
- * Performance: uses _fields to request only needed data,
- * reducing payload size by ~60%.
  */
 
 import { Config } from '../constants/config';
@@ -20,25 +17,13 @@ import type {
   WPPost,
 } from './types';
 
-/** Only request the WP fields we actually use in mappers */
-const POST_FIELDS = [
-  'id', 'date', 'modified', 'slug', 'title', 'excerpt', 'content',
-  'categories', 'tags', 'link', '_embedded',
-].join(',');
-
-const LIST_FIELDS = [
-  'id', 'date', 'modified', 'slug', 'title', 'excerpt',
-  'categories', 'tags', 'link', '_embedded',
-].join(',');
-
 export async function fetchPosts(
   params: PostsQueryParams,
 ): Promise<PaginatedResponse<AppPost>> {
   const queryParams: Record<string, string> = {
     page: String(params.page),
     per_page: String(params.perPage),
-    _embed: 'wp:featuredmedia,wp:term',
-    _fields: LIST_FIELDS,
+    _embed: '1',
     orderby: 'date',
     order: 'desc',
   };
@@ -64,8 +49,7 @@ export async function fetchPosts(
 
 export async function fetchPost(id: number): Promise<AppPost> {
   const { data } = await apiClient.get<WPPost>(`/posts/${id}`, {
-    _embed: 'wp:featuredmedia,wp:term',
-    _fields: POST_FIELDS,
+    _embed: '1',
   });
   return mapPost(data);
 }
@@ -76,15 +60,12 @@ export async function fetchCategories(): Promise<AppCategory[]> {
     orderby: 'count',
     order: 'desc',
     hide_empty: 'true',
-    _fields: 'id,name,slug,count,parent',
   });
   return mapCategories(data);
 }
 
 export async function fetchCategoryById(id: number): Promise<AppCategory> {
-  const { data } = await apiClient.get<WPCategory>(`/categories/${id}`, {
-    _fields: 'id,name,slug,count,parent',
-  });
+  const { data } = await apiClient.get<WPCategory>(`/categories/${id}`);
   return {
     id: data.id,
     name: data.name,
@@ -102,6 +83,5 @@ export async function searchPosts(
     page,
     perPage: Config.POSTS_PER_PAGE,
     search: query,
-    embed: true,
   });
 }

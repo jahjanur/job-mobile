@@ -67,7 +67,7 @@ export function mapPost(post: WPPost): AppPost {
     id: post.id,
     title: stripHtml(post.title.rendered),
     excerpt: stripHtml(post.excerpt.rendered),
-    content: post.content.rendered,
+    content: post.content?.rendered ?? '',
     slug: post.slug,
     date: post.date,
     modified: post.modified,
