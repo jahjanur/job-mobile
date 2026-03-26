@@ -5,9 +5,11 @@
  * and paginated latest feed — each section visually distinct.
  */
 
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -25,7 +27,7 @@ import { AdBanner } from '../../src/components/ads/AdBanner';
 import { CompactCard } from '../../src/components/cards/CompactCard';
 import { HeroCard } from '../../src/components/cards/HeroCard';
 import { CategorySpotlight } from '../../src/components/feed/CategorySpotlight';
-import { PostFeed } from '../../src/components/feed/PostFeed';
+import { PostCard } from '../../src/components/cards/PostCard';
 import { HeroSkeleton, PostCardSkeleton } from '../../src/components/loaders/SkeletonBox';
 import { AppLogo } from '../../src/components/ui/AppLogo';
 import { BreakingNewsBanner } from '../../src/components/ui/BreakingNewsBanner';
@@ -754,20 +756,51 @@ export default function HomeScreen() {
     </View>
   );
 
+  const handleEndReached = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
   return (
     <View style={[styles.screen, { backgroundColor: colors.background }]}>
-      <PostFeed
-        posts={feedPosts}
-        isLoading={isLoading}
-        isError={isError}
-        isFetchingNextPage={isFetchingNextPage}
-        hasNextPage={hasNextPage ?? false}
-        isRefreshing={isRefreshing}
-        onRefresh={onRefresh}
-        onLoadMore={() => fetchNextPage()}
-        onRetry={() => refetch()}
-        ListHeaderComponent={ListHeader}
-      />
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.accent}
+            colors={[colors.accent]}
+          />
+        }
+        onScroll={({ nativeEvent }) => {
+          const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+          const distanceFromBottom = contentSize.height - layoutMeasurement.height - contentOffset.y;
+          if (distanceFromBottom < 500) {
+            handleEndReached();
+          }
+        }}
+        scrollEventThrottle={400}
+        contentContainerStyle={{ paddingBottom: spacing.massive + 40 }}
+      >
+        {ListHeader}
+
+        {/* ── Feed posts ─────────────────────────── */}
+        {feedPosts.map((post, i) => (
+          <React.Fragment key={post.id}>
+            <PostCard post={post} />
+            {(i + 1) % 5 === 0 && <AdBanner />}
+          </React.Fragment>
+        ))}
+
+        {/* Loading more indicator */}
+        {isFetchingNextPage && (
+          <View style={{ paddingVertical: spacing.xl, alignItems: 'center' }}>
+            <ActivityIndicator color={colors.accent} />
+          </View>
+        )}
+      </ScrollView>
     </View>
   );
 }
