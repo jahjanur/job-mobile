@@ -1,14 +1,17 @@
 /**
- * Branded loading screen with the JOQ logo.
- * Pulsing logo with a subtle shimmer ring and loading dots.
+ * Branded JOQ loading animation.
+ * Clean vertical layout: logo on top with a glow pulse,
+ * animated progress bar below, and staggered bouncing dots.
  */
 
 import React, { useEffect } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Dimensions, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   Easing,
+  interpolate,
   useAnimatedStyle,
   useSharedValue,
+  withDelay,
   withRepeat,
   withSequence,
   withTiming,
@@ -23,126 +26,130 @@ const LOGO_PATHS = [
   'M78.9,23.7c-4.3,0-8.1,0-11.8,0c-4,0-6.9-1.6-7-5.8c-0.1-4.1,2.8-5.9,6.8-6c5.7-0.1,11.4-0.1,17.1,0c4.3,0.1,6.7,2.4,6.6,6.8c0,14,0.4,28.1-0.2,42C89.6,79.2,76.1,95.5,58.3,101c-17.6,5.4-37.3-0.7-48.7-15c-2.6-3.3-4.5-6.6-0.5-9.9c3.9-3.2,6.8-0.8,9.6,2.5c10,11.6,24.4,15.6,38,10.6c13.6-5,22.1-17.3,22.2-32.5C79,45.9,78.9,35.1,78.9,23.7z',
 ];
 
+const BAR_WIDTH = 120;
+
 interface BrandedLoaderProps {
   message?: string;
+}
+
+function BounceDot({ delay, color }: { delay: number; color: string }) {
+  const translateY = useSharedValue(0);
+
+  useEffect(() => {
+    translateY.value = withDelay(
+      delay,
+      withRepeat(
+        withSequence(
+          withTiming(-8, { duration: 300, easing: Easing.out(Easing.quad) }),
+          withTiming(0, { duration: 300, easing: Easing.in(Easing.quad) }),
+        ),
+        -1,
+      ),
+    );
+  }, []);
+
+  const style = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+  }));
+
+  return (
+    <Animated.View
+      style={[
+        {
+          width: 7,
+          height: 7,
+          borderRadius: 3.5,
+          backgroundColor: color,
+          marginHorizontal: 4,
+        },
+        style,
+      ]}
+    />
+  );
 }
 
 export function BrandedLoader({ message }: BrandedLoaderProps) {
   const { colors, spacing, typography } = useTheme();
 
-  // Logo pulse
-  const logoScale = useSharedValue(1);
-  const logoOpacity = useSharedValue(0.6);
-
-  // Ring rotation
-  const ringRotation = useSharedValue(0);
-
-  // Dots
-  const dot1 = useSharedValue(0.3);
-  const dot2 = useSharedValue(0.3);
-  const dot3 = useSharedValue(0.3);
+  // Logo breathe
+  const breathe = useSharedValue(0);
+  // Progress bar sweep
+  const sweep = useSharedValue(0);
 
   useEffect(() => {
-    // Pulse the logo
-    logoScale.value = withRepeat(
+    breathe.value = withRepeat(
       withSequence(
-        withTiming(1.05, { duration: 800, easing: Easing.inOut(Easing.ease) }),
-        withTiming(1, { duration: 800, easing: Easing.inOut(Easing.ease) }),
-      ),
-      -1,
-    );
-    logoOpacity.value = withRepeat(
-      withSequence(
-        withTiming(1, { duration: 800 }),
-        withTiming(0.6, { duration: 800 }),
+        withTiming(1, { duration: 1000, easing: Easing.inOut(Easing.ease) }),
+        withTiming(0, { duration: 1000, easing: Easing.inOut(Easing.ease) }),
       ),
       -1,
     );
 
-    // Rotate ring
-    ringRotation.value = withRepeat(
-      withTiming(360, { duration: 2000, easing: Easing.linear }),
+    sweep.value = withRepeat(
+      withSequence(
+        withTiming(1, { duration: 1200, easing: Easing.inOut(Easing.cubic) }),
+        withTiming(0, { duration: 0 }),
+      ),
       -1,
     );
-
-    // Staggered dots
-    const dotAnim = (delay: number) =>
-      withRepeat(
-        withSequence(
-          withTiming(1, { duration: 300 }),
-          withTiming(0.3, { duration: 300 }),
-        ),
-        -1,
-      );
-
-    setTimeout(() => { dot1.value = dotAnim(0); }, 0);
-    setTimeout(() => { dot2.value = dotAnim(0); }, 200);
-    setTimeout(() => { dot3.value = dotAnim(0); }, 400);
   }, []);
 
-  const logoStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: logoScale.value }],
-    opacity: logoOpacity.value,
-  }));
+  const logoStyle = useAnimatedStyle(() => {
+    const scale = interpolate(breathe.value, [0, 1], [1, 1.06]);
+    const opacity = interpolate(breathe.value, [0, 1], [0.7, 1]);
+    return { transform: [{ scale }], opacity };
+  });
 
-  const ringStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${ringRotation.value}deg` }],
-  }));
-
-  const dot1Style = useAnimatedStyle(() => ({ opacity: dot1.value }));
-  const dot2Style = useAnimatedStyle(() => ({ opacity: dot2.value }));
-  const dot3Style = useAnimatedStyle(() => ({ opacity: dot3.value }));
+  const barStyle = useAnimatedStyle(() => {
+    const width = interpolate(sweep.value, [0, 0.5, 1], [0, BAR_WIDTH, 0]);
+    const left = interpolate(sweep.value, [0, 0.5, 1], [0, 0, BAR_WIDTH]);
+    return { width, marginLeft: left };
+  });
 
   return (
     <View style={styles.container}>
-      {/* Spinning ring */}
-      <Animated.View style={[styles.ringContainer, ringStyle]}>
-        <View
-          style={[
-            styles.ring,
-            {
-              borderColor: colors.accent + '20',
-              borderTopColor: colors.accent,
-            },
-          ]}
-        />
-      </Animated.View>
-
       {/* Logo */}
-      <Animated.View style={[styles.logoContainer, logoStyle]}>
-        <Svg width={80} height={32} viewBox="0 0 300 120">
+      <Animated.View style={logoStyle}>
+        <Svg width={100} height={40} viewBox="0 0 300 120">
           {LOGO_PATHS.map((d, i) => (
-            <Path key={i} d={d} fill={colors.accent} />
+            <Path key={i} d={d} fill={colors.text} />
           ))}
         </Svg>
       </Animated.View>
 
-      {/* Loading dots */}
-      <View style={[styles.dotsRow, { marginTop: spacing.xl }]}>
-        <Animated.View
-          style={[styles.dot, { backgroundColor: colors.accent }, dot1Style]}
-        />
+      {/* Progress bar */}
+      <View
+        style={[
+          styles.barTrack,
+          {
+            width: BAR_WIDTH,
+            backgroundColor: colors.border,
+            marginTop: spacing.xl,
+          },
+        ]}
+      >
         <Animated.View
           style={[
-            styles.dot,
-            { backgroundColor: colors.accent, marginHorizontal: spacing.xs },
-            dot2Style,
+            styles.barFill,
+            { backgroundColor: colors.accent },
+            barStyle,
           ]}
-        />
-        <Animated.View
-          style={[styles.dot, { backgroundColor: colors.accent }, dot3Style]}
         />
       </View>
 
-      {/* Optional message */}
+      {/* Bouncing dots */}
+      <View style={[styles.dotsRow, { marginTop: spacing.xl }]}>
+        <BounceDot delay={0} color={colors.accent} />
+        <BounceDot delay={150} color={colors.accent} />
+        <BounceDot delay={300} color={colors.accent} />
+      </View>
+
+      {/* Message */}
       {message && (
         <Text
           style={[
             typography.caption,
-            {
-              color: colors.textTertiary,
-              marginTop: spacing.md,
-            },
+            { color: colors.textTertiary, marginTop: spacing.lg },
           ]}
         >
           {message}
@@ -157,28 +164,20 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingBottom: 60,
+    paddingBottom: 80,
   },
-  ringContainer: {
-    position: 'absolute',
+  barTrack: {
+    height: 3,
+    borderRadius: 1.5,
+    overflow: 'hidden',
   },
-  ring: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    borderWidth: 2.5,
-  },
-  logoContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
+  barFill: {
+    height: '100%',
+    borderRadius: 1.5,
   },
   dotsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    height: 20,
   },
 });
