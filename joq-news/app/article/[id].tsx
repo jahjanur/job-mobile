@@ -4,7 +4,7 @@
  * Hurme4 typography, and related articles.
  */
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
 import {
   Linking,
   type NativeScrollEvent,
@@ -16,10 +16,8 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import * as Speech from 'expo-speech';
 import { useSharedValue } from 'react-native-reanimated';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -33,7 +31,9 @@ import { ReadingProgressBar } from '../../src/components/ui/ReadingProgressBar';
 import { triggerHaptic } from '../../src/hooks/useHaptic';
 import { usePost } from '../../src/hooks/usePost';
 import { useBookmarksStore } from '../../src/store/bookmarksStore';
+import { usePreferencesStore } from '../../src/store/preferencesStore';
 import { useTheme } from '../../src/theme';
+import type { FontSize } from '../../src/theme/typography';
 import { formatArticleDate } from '../../src/utils/date';
 import { getImageSource } from '../../src/utils/image';
 import { estimateReadingTime, formatReadingTime } from '../../src/utils/reading';
@@ -107,51 +107,18 @@ export default function ArticleScreen() {
     }
   }, [post]);
 
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [speechRate, setSpeechRate] = useState(0.85);
+  // Font size quick toggle
+  const currentFontSize = usePreferencesStore((s) => s.fontSize);
+  const setFontSize = usePreferencesStore((s) => s.setFontSize);
+  const FONT_SIZES: FontSize[] = ['small', 'medium', 'large'];
+  const FONT_LABELS: Record<FontSize, string> = { small: 'A', medium: 'A', large: 'A' };
 
-  const handleTextToSpeech = useCallback(async () => {
-    if (!post) return;
-    if (isSpeaking) {
-      Speech.stop();
-      setIsSpeaking(false);
-      return;
-    }
-
-    // Clean HTML and decode entities
-    let plainText = post.content
-      .replace(/<br\s*\/?>/gi, '\n')
-      .replace(/<\/p>/gi, '\n\n')
-      .replace(/<[^>]*>/g, '')
-      .replace(/&nbsp;/g, ' ')
-      .replace(/&amp;/g, '&')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&quot;/g, '"')
-      .replace(/&#039;/g, "'")
-      .replace(/\s+/g, ' ')
-      .trim();
-
-    // Prepend title for context
-    plainText = `${post.title}.\n\n${plainText}`;
-
-    // Try to find the best available voice
-    const voices = await Speech.getAvailableVoicesAsync();
-    const sqVoice = voices.find((v) =>
-      v.language.startsWith('sq') && v.quality === 'Enhanced',
-    ) ?? voices.find((v) => v.language.startsWith('sq'));
-
-    setIsSpeaking(true);
-    Speech.speak(plainText, {
-      language: sqVoice?.language ?? 'sq',
-      voice: sqVoice?.identifier,
-      rate: speechRate,
-      pitch: 1.05,
-      onDone: () => setIsSpeaking(false),
-      onStopped: () => setIsSpeaking(false),
-      onError: () => setIsSpeaking(false),
-    });
-  }, [post, isSpeaking, speechRate]);
+  const cycleFontSize = useCallback(() => {
+    const idx = FONT_SIZES.indexOf(currentFontSize);
+    const next = FONT_SIZES[(idx + 1) % FONT_SIZES.length];
+    setFontSize(next);
+    triggerHaptic('light');
+  }, [currentFontSize, setFontSize]);
 
   /* ── Floating top bar ─────────────────────────── */
   const TopBar = (
@@ -408,77 +375,18 @@ export default function ArticleScreen() {
                 </Text>
               </Pressable>
 
-            <Pressable onPress={handleTextToSpeech} style={styles.inlineActionBtn}>
-              <Ionicons
-                name={isSpeaking ? 'stop-circle-outline' : 'volume-high-outline'}
-                size={20}
-                color={isSpeaking ? colors.accent : colors.textSecondary}
-              />
+            <Pressable onPress={cycleFontSize} style={styles.inlineActionBtn}>
+              <Ionicons name="text-outline" size={20} color={colors.textSecondary} />
               <Text
                 style={[
                   typography.caption,
-                  {
-                    color: isSpeaking ? colors.accent : colors.textSecondary,
-                    marginLeft: spacing.xs,
-                  },
+                  { color: colors.textSecondary, marginLeft: spacing.xs },
                 ]}
               >
-                {isSpeaking ? 'Ndalo' : 'Degjo'}
+                {currentFontSize === 'small' ? 'Vogel' : currentFontSize === 'medium' ? 'Mesatar' : 'Madh'}
               </Text>
             </Pressable>
           </View>
-
-          {/* ── Speed control (visible when speaking) ─ */}
-          {isSpeaking && (
-            <View
-              style={[
-                styles.speedRow,
-                {
-                  marginTop: spacing.md,
-                  paddingVertical: spacing.sm,
-                  paddingHorizontal: spacing.lg,
-                  backgroundColor: colors.accentLight,
-                  borderRadius: radius.md,
-                },
-              ]}
-            >
-              <Ionicons name="speedometer-outline" size={14} color={colors.accent} />
-              <Text
-                style={[typography.caption, { color: colors.accent, marginLeft: spacing.xs, flex: 1 }]}
-              >
-                Shpejtesia
-              </Text>
-              {[0.7, 0.85, 1.0, 1.2].map((rate) => (
-                <TouchableOpacity
-                  key={rate}
-                  onPress={() => {
-                    setSpeechRate(rate);
-                    // Restart with new rate
-                    Speech.stop();
-                    setIsSpeaking(false);
-                    setTimeout(() => handleTextToSpeech(), 200);
-                  }}
-                  activeOpacity={0.6}
-                  style={[
-                    styles.speedChip,
-                    {
-                      backgroundColor: speechRate === rate ? colors.accent : 'transparent',
-                      borderRadius: radius.sm,
-                    },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      typography.label,
-                      { color: speechRate === rate ? '#FFF' : colors.accent },
-                    ]}
-                  >
-                    {rate === 1.0 ? '1x' : `${rate}x`}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
 
           {/* ── Article body ──────────────────────── */}
           <View style={{ marginTop: spacing.xl }}>
@@ -576,14 +484,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 4,
     paddingHorizontal: 8,
-  },
-  speedRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  speedChip: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    marginLeft: 4,
   },
 });
