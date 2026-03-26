@@ -1,21 +1,21 @@
 /**
- * Tab bar — glassmorphism floating bar with blur effect.
+ * Tab bar — edge-to-edge solid bar, no floating, no blur.
+ * Clean, solid, properly aligned.
  */
 
 import React, { useEffect } from 'react';
-import { Platform, StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { ComponentProps } from 'react';
-import { BlurView } from 'expo-blur';
 import { Tabs } from 'expo-router';
 import Animated, {
-  Easing,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
-  withTiming,
 } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { hurme4 } from '../../src/theme/typography';
 import { useTheme } from '../../src/theme';
 
 type Ion = ComponentProps<typeof Ionicons>['name'];
@@ -23,103 +23,85 @@ type Ion = ComponentProps<typeof Ionicons>['name'];
 function TabIcon({
   filled,
   outline,
+  label,
   focused,
-  tint,
-  muted,
+  accent,
+  inactive,
 }: {
   filled: Ion;
   outline: Ion;
+  label: string;
   focused: boolean;
-  tint: string;
-  muted: string;
+  accent: string;
+  inactive: string;
 }) {
-  const translateY = useSharedValue(0);
-  const dotScale = useSharedValue(0);
+  const scale = useSharedValue(1);
 
   useEffect(() => {
-    translateY.value = withSpring(focused ? -2 : 0, { damping: 14, stiffness: 200 });
-    dotScale.value = withTiming(focused ? 1 : 0, {
-      duration: 200,
-      easing: Easing.out(Easing.cubic),
-    });
+    if (focused) {
+      scale.value = withSpring(1.15, { damping: 10, stiffness: 300 });
+    } else {
+      scale.value = withSpring(1, { damping: 12, stiffness: 200 });
+    }
   }, [focused]);
 
-  const iconStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
+  const animStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
   }));
 
-  const dotStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: dotScale.value }],
-    opacity: dotScale.value,
-  }));
+  const color = focused ? accent : inactive;
 
   return (
-    <View style={styles.iconWrap}>
-      <Animated.View style={iconStyle}>
+    <View style={styles.tab}>
+      {focused && (
+        <View style={[styles.activeBar, { backgroundColor: accent }]} />
+      )}
+      <Animated.View style={animStyle}>
         <Ionicons
           name={focused ? filled : outline}
           size={22}
-          color={focused ? tint : muted}
+          color={color}
         />
       </Animated.View>
-      <Animated.View
-        style={[styles.dot, { backgroundColor: tint }, dotStyle]}
-      />
+      <Text
+        style={[
+          styles.label,
+          {
+            color,
+            fontFamily: focused ? hurme4.bold : hurme4.regular,
+          },
+        ]}
+      >
+        {label}
+      </Text>
     </View>
   );
 }
 
 export default function TabsLayout() {
   const { colors, dark } = useTheme();
+  const insets = useSafeAreaInsets();
 
-  const muted = dark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.3)';
+  const inactive = dark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.35)';
+  const bg = dark ? '#0C0C0E' : '#FAFAFA';
+  const border = dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)';
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
-        tabBarBackground: () => (
-          <View style={styles.barBg}>
-            <BlurView
-              intensity={dark ? 40 : 80}
-              tint={dark ? 'dark' : 'light'}
-              style={StyleSheet.absoluteFill}
-            />
-            <View
-              style={[
-                StyleSheet.absoluteFill,
-                {
-                  backgroundColor: dark
-                    ? 'rgba(18,18,20,0.75)'
-                    : 'rgba(255,255,255,0.7)',
-                },
-              ]}
-            />
-          </View>
-        ),
         tabBarStyle: {
-          position: 'absolute',
-          bottom: Platform.OS === 'ios' ? 24 : 12,
-          left: 16,
-          right: 16,
-          height: 58,
-          borderRadius: 20,
-          borderTopWidth: 0,
+          backgroundColor: bg,
+          height: 56 + (Platform.OS === 'ios' ? insets.bottom : 8),
+          paddingBottom: Platform.OS === 'ios' ? insets.bottom : 8,
+          borderTopWidth: StyleSheet.hairlineWidth,
+          borderTopColor: border,
           elevation: 0,
-          backgroundColor: 'transparent',
-          shadowColor: dark ? '#E31E24' : '#000',
-          shadowOffset: { width: 0, height: 8 },
-          shadowOpacity: dark ? 0.2 : 0.08,
-          shadowRadius: 24,
-          overflow: 'hidden',
-          borderWidth: 1,
-          borderColor: dark
-            ? 'rgba(255,255,255,0.08)'
-            : 'rgba(0,0,0,0.06)',
+          shadowOpacity: 0,
         },
         tabBarItemStyle: {
-          paddingTop: 4,
+          paddingTop: 0,
         },
       }}
     >
@@ -127,7 +109,7 @@ export default function TabsLayout() {
         name="index"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon filled="home" outline="home-outline" focused={focused} tint={colors.accent} muted={muted} />
+            <TabIcon filled="home" outline="home-outline" label="Ballina" focused={focused} accent={colors.accent} inactive={inactive} />
           ),
         }}
       />
@@ -135,7 +117,7 @@ export default function TabsLayout() {
         name="categories"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon filled="grid" outline="grid-outline" focused={focused} tint={colors.accent} muted={muted} />
+            <TabIcon filled="grid" outline="grid-outline" label="Tema" focused={focused} accent={colors.accent} inactive={inactive} />
           ),
         }}
       />
@@ -143,7 +125,7 @@ export default function TabsLayout() {
         name="search"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon filled="search" outline="search-outline" focused={focused} tint={colors.accent} muted={muted} />
+            <TabIcon filled="search" outline="search-outline" label="Kerko" focused={focused} accent={colors.accent} inactive={inactive} />
           ),
         }}
       />
@@ -151,7 +133,7 @@ export default function TabsLayout() {
         name="bookmarks"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon filled="bookmark" outline="bookmark-outline" focused={focused} tint={colors.accent} muted={muted} />
+            <TabIcon filled="bookmark" outline="bookmark-outline" label="Ruajtur" focused={focused} accent={colors.accent} inactive={inactive} />
           ),
         }}
       />
@@ -159,7 +141,7 @@ export default function TabsLayout() {
         name="settings"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon filled="ellipsis-horizontal" outline="ellipsis-horizontal" focused={focused} tint={colors.accent} muted={muted} />
+            <TabIcon filled="ellipsis-horizontal" outline="ellipsis-horizontal" label="Me shume" focused={focused} accent={colors.accent} inactive={inactive} />
           ),
         }}
       />
@@ -168,20 +150,22 @@ export default function TabsLayout() {
 }
 
 const styles = StyleSheet.create({
-  barBg: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: 20,
-    overflow: 'hidden',
-  },
-  iconWrap: {
+  tab: {
     alignItems: 'center',
     justifyContent: 'center',
-    height: 40,
+    flex: 1,
+    paddingTop: 8,
   },
-  dot: {
-    width: 5,
-    height: 5,
-    borderRadius: 2.5,
+  activeBar: {
+    position: 'absolute',
+    top: -1,
+    width: 24,
+    height: 2.5,
+    borderRadius: 2,
+  },
+  label: {
+    fontSize: 10,
     marginTop: 4,
+    letterSpacing: 0.1,
   },
 });
