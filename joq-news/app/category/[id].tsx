@@ -1,9 +1,11 @@
 /**
- * Category feed screen — shows posts filtered by category.
+ * Category feed screen — shows posts filtered by category
+ * with branded JOQ loading animation.
  */
 
 import React, { useMemo } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -39,50 +41,47 @@ export default function CategoryFeedScreen() {
 
   const categoryName = name ? decodeURIComponent(name) : 'Category';
 
-  const ListHeader = useMemo(
-    () => (
-      <View
-        style={{
-          paddingTop: insets.top + spacing.sm,
-          paddingHorizontal: spacing.lg,
-          paddingBottom: spacing.lg,
-        }}
-      >
-        <View style={styles.headerRow}>
-          <Pressable
-            onPress={() => router.back()}
+  const ListHeader = (
+    <View
+      style={{
+        paddingTop: insets.top + spacing.sm,
+        paddingHorizontal: spacing.lg,
+        paddingBottom: spacing.lg,
+      }}
+    >
+      <View style={styles.headerRow}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          activeOpacity={0.6}
+          style={[
+            styles.backBtn,
+            {
+              backgroundColor: colors.surface,
+              borderRadius: radius.full,
+              marginRight: spacing.md,
+              borderWidth: dark ? 0 : StyleSheet.hairlineWidth,
+              borderColor: colors.borderLight,
+            },
+          ]}
+        >
+          <Ionicons name="arrow-back" size={20} color={colors.text} />
+        </TouchableOpacity>
+        <View style={{ flex: 1 }}>
+          <Text
             style={[
-              styles.backBtn,
+              typography.h2,
               {
-                backgroundColor: colors.surface,
-                borderRadius: radius.full,
-                marginRight: spacing.md,
-                borderWidth: dark ? 0 : StyleSheet.hairlineWidth,
-                borderColor: colors.borderLight,
+                color: colors.text,
+                fontSize: 22,
+                letterSpacing: -0.3,
               },
             ]}
-            hitSlop={8}
           >
-            <Ionicons name="arrow-back" size={20} color={colors.text} />
-          </Pressable>
-          <View style={{ flex: 1 }}>
-            <Text
-              style={[
-                typography.h2,
-                {
-                  color: colors.text,
-                  fontSize: 22,
-                  letterSpacing: -0.3,
-                },
-              ]}
-            >
-              {categoryName}
-            </Text>
-          </View>
+            {categoryName}
+          </Text>
         </View>
       </View>
-    ),
-    [insets.top, spacing, colors, radius, typography, categoryName, router, dark],
+    </View>
   );
 
   return (

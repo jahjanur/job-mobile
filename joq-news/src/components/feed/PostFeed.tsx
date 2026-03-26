@@ -17,7 +17,7 @@ import type { AppPost } from '../../api/types';
 import { useTheme } from '../../theme';
 import { AdBanner } from '../ads/AdBanner';
 import { PostCard } from '../cards/PostCard';
-import { PostCardSkeleton } from '../loaders/SkeletonBox';
+import { BrandedLoader } from '../loaders/BrandedLoader';
 import { EmptyState } from '../states/EmptyState';
 import { ErrorState } from '../states/ErrorState';
 
@@ -107,11 +107,7 @@ export function PostFeed({
     return (
       <View style={{ flex: 1, backgroundColor: colors.background }}>
         {ListHeaderComponent}
-        <View style={{ marginTop: spacing.md }}>
-          {Array.from({ length: 4 }).map((_, i) => (
-            <PostCardSkeleton key={i} />
-          ))}
-        </View>
+        <BrandedLoader message="Duke ngarkuar..." />
       </View>
     );
   }
