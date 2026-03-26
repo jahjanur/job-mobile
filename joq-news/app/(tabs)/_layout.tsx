@@ -1,6 +1,6 @@
 /**
- * Tab bar — edge-to-edge solid bar, no floating, no blur.
- * Clean, solid, properly aligned.
+ * Tab bar — solid edge-to-edge, icons and labels pinned to the top
+ * of the bar with safe area padding only at the very bottom.
  */
 
 import React, { useEffect } from 'react';
@@ -38,11 +38,7 @@ function TabIcon({
   const scale = useSharedValue(1);
 
   useEffect(() => {
-    if (focused) {
-      scale.value = withSpring(1.15, { damping: 10, stiffness: 300 });
-    } else {
-      scale.value = withSpring(1, { damping: 12, stiffness: 200 });
-    }
+    scale.value = withSpring(focused ? 1.1 : 1, { damping: 12, stiffness: 250 });
   }, [focused]);
 
   const animStyle = useAnimatedStyle(() => ({
@@ -53,24 +49,33 @@ function TabIcon({
 
   return (
     <View style={styles.tab}>
-      {focused && (
-        <View style={[styles.activeBar, { backgroundColor: accent }]} />
-      )}
-      <Animated.View style={animStyle}>
+      {/* Active indicator line */}
+      <View
+        style={[
+          styles.indicator,
+          { backgroundColor: focused ? accent : 'transparent' },
+        ]}
+      />
+
+      {/* Icon */}
+      <Animated.View style={[styles.iconBox, animStyle]}>
         <Ionicons
           name={focused ? filled : outline}
-          size={22}
+          size={21}
           color={color}
         />
       </Animated.View>
+
+      {/* Label */}
       <Text
         style={[
           styles.label,
           {
             color,
-            fontFamily: focused ? hurme4.bold : hurme4.regular,
+            fontFamily: focused ? hurme4.semiBold : hurme4.regular,
           },
         ]}
+        numberOfLines={1}
       >
         {label}
       </Text>
@@ -82,9 +87,10 @@ export default function TabsLayout() {
   const { colors, dark } = useTheme();
   const insets = useSafeAreaInsets();
 
-  const inactive = dark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.35)';
+  const inactive = dark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.3)';
   const bg = dark ? '#0C0C0E' : '#FAFAFA';
-  const border = dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)';
+  const border = dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+  const bottomPad = Platform.OS === 'ios' ? insets.bottom : 6;
 
   return (
     <Tabs
@@ -93,15 +99,18 @@ export default function TabsLayout() {
         tabBarShowLabel: false,
         tabBarStyle: {
           backgroundColor: bg,
-          height: 56 + (Platform.OS === 'ios' ? insets.bottom : 8),
-          paddingBottom: Platform.OS === 'ios' ? insets.bottom : 8,
+          // Icon area (50px) + bottom safe area
+          height: 50 + bottomPad,
           borderTopWidth: StyleSheet.hairlineWidth,
           borderTopColor: border,
           elevation: 0,
           shadowOpacity: 0,
         },
         tabBarItemStyle: {
+          // Pin content to top, let safe area be empty space below
+          height: 50,
           paddingTop: 0,
+          paddingBottom: 0,
         },
       }}
     >
@@ -152,20 +161,21 @@ export default function TabsLayout() {
 const styles = StyleSheet.create({
   tab: {
     alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingTop: 8,
+    width: '100%',
+    height: 50,
   },
-  activeBar: {
-    position: 'absolute',
-    top: -1,
-    width: 24,
+  indicator: {
+    width: 20,
     height: 2.5,
-    borderRadius: 2,
+    borderRadius: 1.5,
+    marginTop: 2,
+  },
+  iconBox: {
+    marginTop: 6,
   },
   label: {
     fontSize: 10,
-    marginTop: 4,
+    marginTop: 3,
     letterSpacing: 0.1,
   },
 });
