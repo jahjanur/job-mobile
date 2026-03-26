@@ -85,29 +85,26 @@ export default function HomeScreen() {
 
   const todayFormatted = formatTodayAlbanian();
 
-  const ListHeader = useMemo(() => {
-    if (isLoading) {
-      return (
-        <View style={{ paddingTop: insets.top + spacing.md }}>
-          <View
-            style={{
-              marginHorizontal: spacing.lg,
-              marginBottom: spacing.xxl,
-            }}
-          >
-            <AppLogo width={120} />
-          </View>
-          <HeroSkeleton />
-          <View style={{ marginTop: spacing.lg }}>
-            <PostCardSkeleton />
-            <PostCardSkeleton />
-          </View>
+  const ListHeader = (
+    <View style={{ paddingTop: insets.top + spacing.md }}>
+    {isLoading ? (
+      <>
+        <View
+          style={{
+            marginHorizontal: spacing.lg,
+            marginBottom: spacing.xxl,
+          }}
+        >
+          <AppLogo width={120} />
         </View>
-      );
-    }
-
-    return (
-      <View style={{ paddingTop: insets.top + spacing.md }}>
+        <HeroSkeleton />
+        <View style={{ marginTop: spacing.lg }}>
+          <PostCardSkeleton />
+          <PostCardSkeleton />
+        </View>
+      </>
+    ) : (
+      <>
         {/* ── Header ──────────────────────────────────── */}
         <View
           style={[
@@ -752,27 +749,10 @@ export default function HomeScreen() {
         </View>
           </>
         )}
-      </View>
-    );
-  }, [
-    isLoading,
-    selectedCategoryId,
-    allPosts,
-    heroPost,
-    trendingPosts,
-    spotlightPost,
-    gridPosts,
-    categories,
-    insets.top,
-    spacing,
-    typography,
-    colors,
-    dark,
-    radius,
-    fonts,
-    todayFormatted,
-    router,
-  ]);
+      </>
+    )}
+    </View>
+  );
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.background }]}>
