@@ -26,7 +26,6 @@ import { useRouter } from 'expo-router';
 
 import { AppLogo } from '../../src/components/ui/AppLogo';
 import { Config } from '../../src/constants/config';
-import { useAuthStore } from '../../src/store/authStore';
 import { useBookmarksStore } from '../../src/store/bookmarksStore';
 import { useSubscriptionStore } from '../../src/store/subscriptionStore';
 import {
@@ -302,10 +301,6 @@ export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
-  const authUser = useAuthStore((s) => s.user);
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  const authLogout = useAuthStore((s) => s.logout);
-
   const subscriptionEmail = useSubscriptionStore((s) => s.email);
   const isSubscribed = useSubscriptionStore((s) => s.isSubscribed);
   const unsubscribe = useSubscriptionStore((s) => s.unsubscribe);
@@ -401,27 +396,6 @@ export default function SettingsScreen() {
       </Text>
 
       {/* ═══════════════════════════════════════ */}
-      {/*  0. LLOGARIA (Account)                   */}
-      {/* ═══════════════════════════════════════ */}
-      <SectionLabel text="LLOGARIA" />
-      <Card>
-        {isAuthenticated && authUser ? (
-          <>
-            <InfoRow label="Emri" value={authUser.displayName ?? 'Pa emër'} icon="person-outline" />
-            <InfoRow label="Email" value={authUser.email ?? ''} icon="mail-outline" />
-            <LinkRow label="Dil nga llogaria" icon="log-out-outline" onPress={authLogout} isLast />
-          </>
-        ) : (
-          <LinkRow
-            label="Hyr / Regjistrohu"
-            icon="log-in-outline"
-            onPress={() => router.push('/(auth)/login')}
-            isLast
-          />
-        )}
-      </Card>
-
-      {/* ═══════════════════════════════════════ */}
       {/*  1. PAMJA (Appearance)                  */}
       {/* ═══════════════════════════════════════ */}
       <SectionLabel text="PAMJA" />
@@ -494,8 +468,8 @@ export default function SettingsScreen() {
             onValueChange={(val) => {
               setHapticFeedback(val);
               if (val) {
-                // Fire a test vibration so user feels it works
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                // Fire a strong test vibration so user feels it works
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
               }
             }}
             trackColor={switchColors}

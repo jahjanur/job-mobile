@@ -28,7 +28,7 @@ export const BookmarkCard = memo(function BookmarkCard({
   const removeBookmark = useBookmarksStore((s) => s.removeBookmark);
 
   const handleRemove = () => {
-    triggerHaptic('light');
+    triggerHaptic('warning');
     removeBookmark(bookmark.id);
   };
 

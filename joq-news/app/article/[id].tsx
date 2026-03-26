@@ -88,14 +88,14 @@ export default function ArticleScreen() {
 
   const handleBookmark = useCallback(() => {
     if (post) {
-      triggerHaptic('medium');
+      triggerHaptic('success');
       toggleBookmark(post);
     }
   }, [post, toggleBookmark]);
 
   const handleShare = useCallback(() => {
     if (post) {
-      triggerHaptic('light');
+      triggerHaptic('medium');
       shareArticle(post);
     }
   }, [post]);

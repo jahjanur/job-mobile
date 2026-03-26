@@ -121,10 +121,6 @@ function AppContent() {
             name="live"
             options={{ animation: 'slide_from_bottom' }}
           />
-          <Stack.Screen
-            name="(auth)"
-            options={{ animation: 'slide_from_bottom' }}
-          />
         </Stack>
         {showSplash && <AnimatedSplash onFinish={handleSplashFinish} />}
       </View>

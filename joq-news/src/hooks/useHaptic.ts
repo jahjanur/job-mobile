@@ -1,6 +1,6 @@
 /**
- * Haptic feedback hook that respects the user's preference.
- * Returns a trigger function that only fires if haptics are enabled.
+ * Haptic feedback that respects the user's preference.
+ * Uses stronger vibration patterns for more noticeable feedback.
  */
 
 import { useCallback } from 'react';
@@ -8,21 +8,15 @@ import * as Haptics from 'expo-haptics';
 
 import { usePreferencesStore } from '../store/preferencesStore';
 
-type HapticStyle = 'light' | 'medium' | 'heavy';
-
-const STYLE_MAP: Record<HapticStyle, Haptics.ImpactFeedbackStyle> = {
-  light: Haptics.ImpactFeedbackStyle.Light,
-  medium: Haptics.ImpactFeedbackStyle.Medium,
-  heavy: Haptics.ImpactFeedbackStyle.Heavy,
-};
+type HapticStyle = 'light' | 'medium' | 'heavy' | 'success' | 'warning' | 'error';
 
 export function useHaptic() {
   const enabled = usePreferencesStore((s) => s.hapticFeedback);
 
   const trigger = useCallback(
-    (style: HapticStyle = 'light') => {
+    (style: HapticStyle = 'medium') => {
       if (enabled) {
-        Haptics.impactAsync(STYLE_MAP[style]);
+        fireHaptic(style);
       }
     },
     [enabled],
@@ -32,12 +26,37 @@ export function useHaptic() {
 }
 
 /**
- * Non-hook version for use outside components (e.g. in callbacks).
+ * Non-hook version for use outside components.
  * Reads the store directly.
  */
-export function triggerHaptic(style: HapticStyle = 'light') {
+export function triggerHaptic(style: HapticStyle = 'medium') {
   const enabled = usePreferencesStore.getState().hapticFeedback;
   if (enabled) {
-    Haptics.impactAsync(STYLE_MAP[style]);
+    fireHaptic(style);
+  }
+}
+
+function fireHaptic(style: HapticStyle) {
+  switch (style) {
+    case 'light':
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      break;
+    case 'medium':
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+      break;
+    case 'heavy':
+      // Double tap for extra strong feedback
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+      setTimeout(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy), 100);
+      break;
+    case 'success':
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      break;
+    case 'warning':
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      break;
+    case 'error':
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      break;
   }
 }
