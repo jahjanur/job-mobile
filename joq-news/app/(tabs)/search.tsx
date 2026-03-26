@@ -16,6 +16,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { PostFeed } from '../../src/components/feed/PostFeed';
 import { EmptyState } from '../../src/components/states/EmptyState';
+import { WP_CATEGORIES } from '../../src/constants/categories';
 import { useSearchPosts } from '../../src/hooks/useSearchPosts';
 import { useRefreshByUser } from '../../src/hooks/useRefreshByUser';
 import { usePreferencesStore } from '../../src/store/preferencesStore';
@@ -208,42 +209,64 @@ export default function SearchScreen() {
   );
 
   if (showEmpty) {
+    const router = require('expo-router').useRouter();
+    const suggestedTopics = WP_CATEGORIES.slice(0, 8);
+
     return (
       <View style={[styles.screen, { backgroundColor: colors.background }]}>
         {SearchHeader}
-        <View style={styles.emptyContainer}>
-          <View
+        <View style={{ paddingHorizontal: spacing.lg, marginTop: spacing.xl }}>
+          <Text
             style={[
-              styles.emptyIcon,
-              {
-                backgroundColor: colors.surface,
-                borderRadius: radius.full,
-              },
+              typography.captionMedium,
+              { color: colors.textSecondary, letterSpacing: 0.5, marginBottom: spacing.md },
             ]}
           >
-            <Ionicons name="search-outline" size={28} color={colors.textTertiary} />
+            SHFLETO TEMAT
+          </Text>
+          <View style={styles.topicsGrid}>
+            {suggestedTopics.map((cat) => (
+              <Pressable
+                key={cat.slug}
+                onPress={() =>
+                  router.push(
+                    `/category/${cat.id}?name=${encodeURIComponent(cat.name)}`,
+                  )
+                }
+                style={[
+                  styles.topicChip,
+                  {
+                    backgroundColor: colors.surface,
+                    borderRadius: radius.md,
+                    paddingHorizontal: spacing.lg,
+                    paddingVertical: spacing.md,
+                    marginRight: spacing.sm,
+                    marginBottom: spacing.sm,
+                    borderWidth: StyleSheet.hairlineWidth,
+                    borderColor: colors.borderLight,
+                  },
+                ]}
+              >
+                {cat.flag ? (
+                  <Text style={{ fontSize: 14, marginRight: spacing.xs }}>
+                    {cat.flag}
+                  </Text>
+                ) : (
+                  <Ionicons
+                    name={cat.icon}
+                    size={14}
+                    color={colors.accent}
+                    style={{ marginRight: spacing.xs }}
+                  />
+                )}
+                <Text
+                  style={[typography.captionMedium, { color: colors.text }]}
+                >
+                  {cat.name}
+                </Text>
+              </Pressable>
+            ))}
           </View>
-          <Text
-            style={[
-              typography.h3,
-              { color: colors.text, marginTop: spacing.lg, textAlign: 'center' },
-            ]}
-          >
-            Gjej artikuj
-          </Text>
-          <Text
-            style={[
-              typography.bodySm,
-              {
-                color: colors.textSecondary,
-                marginTop: spacing.sm,
-                textAlign: 'center',
-                maxWidth: 260,
-              },
-            ]}
-          >
-            Kërko sipas fjalës kyçe, temës, ose emrit të autorit.
-          </Text>
         </View>
       </View>
     );
@@ -311,5 +334,13 @@ const styles = StyleSheet.create({
     height: 64,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  topicsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  topicChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 });

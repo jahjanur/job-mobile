@@ -1,6 +1,6 @@
 /**
  * Premium post card used in feed lists.
- * Clean layout with rounded thumbnail, subtle divider, and reading metadata.
+ * Clean layout with rounded thumbnail, category accent, reading metadata.
  */
 
 import React, { memo, useMemo } from 'react';
@@ -44,24 +44,37 @@ export const PostCard = memo(function PostCard({ post }: PostCardProps) {
       <View style={styles.row}>
         <View style={[styles.textContent, { marginRight: spacing.lg }]}>
           {post.categoryNames[0] && (
-            <Text
-              style={[
-                typography.label,
-                {
-                  color: colors.accent,
-                  marginBottom: spacing.sm,
-                  letterSpacing: 0.8,
-                },
-              ]}
-              numberOfLines={1}
-            >
-              {post.categoryNames[0].toUpperCase()}
-            </Text>
+            <View style={styles.categoryRow}>
+              <View
+                style={[
+                  styles.categoryDot,
+                  { backgroundColor: colors.accent, marginRight: spacing.xs },
+                ]}
+              />
+              <Text
+                style={[
+                  typography.label,
+                  {
+                    color: colors.accent,
+                    letterSpacing: 0.5,
+                    fontSize: 10,
+                  },
+                ]}
+                numberOfLines={1}
+              >
+                {post.categoryNames[0].toUpperCase()}
+              </Text>
+            </View>
           )}
           <Text
             style={[
               typography.h3,
-              { color: colors.text, letterSpacing: -0.2, lineHeight: 22 },
+              {
+                color: colors.text,
+                letterSpacing: -0.2,
+                lineHeight: 22,
+                marginTop: spacing.xs,
+              },
             ]}
             numberOfLines={3}
           >
@@ -76,7 +89,7 @@ export const PostCard = memo(function PostCard({ post }: PostCardProps) {
               {formatPostDateWithTime(post.date)}
             </Text>
             <View style={[styles.dot, { backgroundColor: colors.textTertiary }]} />
-            <Ionicons name="time-outline" size={11} color={colors.textTertiary} />
+            <Ionicons name="time-outline" size={10} color={colors.textTertiary} />
             <Text
               style={[
                 typography.caption,
@@ -113,6 +126,15 @@ const styles = StyleSheet.create({
   },
   textContent: {
     flex: 1,
+  },
+  categoryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  categoryDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
   },
   thumbnail: {
     width: 96,

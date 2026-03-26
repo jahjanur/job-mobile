@@ -1,7 +1,7 @@
 /**
  * Premium hero card for the featured top story.
- * Full-bleed image with cinematic gradient overlay,
- * reading time badge, and elegant typography.
+ * Full-bleed image with cinematic gradient, animated category badge,
+ * reading time indicator, and elegant Hurme4 typography.
  */
 
 import React, { memo } from 'react';
@@ -23,7 +23,7 @@ interface HeroCardProps {
 }
 
 export const HeroCard = memo(function HeroCard({ post }: HeroCardProps) {
-  const { spacing, radius, typography } = useTheme();
+  const { spacing, radius, typography, colors } = useTheme();
   const router = useRouter();
   const readTime = estimateReadingTime(post.content);
 
@@ -47,8 +47,8 @@ export const HeroCard = memo(function HeroCard({ post }: HeroCardProps) {
         recyclingKey={`hero-${post.id}`}
       />
       <LinearGradient
-        colors={['transparent', 'rgba(0,0,0,0.3)', 'rgba(0,0,0,0.88)']}
-        locations={[0, 0.4, 1]}
+        colors={['transparent', 'rgba(0,0,0,0.15)', 'rgba(0,0,0,0.92)']}
+        locations={[0, 0.35, 1]}
         style={[styles.gradient, { borderRadius: radius.xl }]}
       />
 
@@ -59,17 +59,17 @@ export const HeroCard = memo(function HeroCard({ post }: HeroCardProps) {
             style={[
               styles.badge,
               {
-                backgroundColor: 'rgba(255,255,255,0.18)',
-                borderRadius: radius.full,
-                paddingHorizontal: spacing.md,
-                paddingVertical: spacing.xs,
+                backgroundColor: colors.accent,
+                borderRadius: radius.sm,
+                paddingHorizontal: spacing.sm,
+                paddingVertical: spacing.xxs + 1,
               },
             ]}
           >
             <Text
               style={[
                 typography.label,
-                { color: '#FFFFFF', letterSpacing: 0.8 },
+                { color: '#FFFFFF', letterSpacing: 0.8, fontSize: 9 },
               ]}
             >
               {post.categoryNames[0].toUpperCase()}
@@ -80,22 +80,23 @@ export const HeroCard = memo(function HeroCard({ post }: HeroCardProps) {
           style={[
             styles.badge,
             {
-              backgroundColor: 'rgba(255,255,255,0.18)',
+              backgroundColor: 'rgba(255,255,255,0.15)',
               borderRadius: radius.full,
-              paddingHorizontal: spacing.md,
-              paddingVertical: spacing.xs,
+              paddingHorizontal: spacing.sm,
+              paddingVertical: spacing.xxs + 1,
               flexDirection: 'row',
               alignItems: 'center',
             },
           ]}
         >
-          <Ionicons name="time-outline" size={11} color="rgba(255,255,255,0.8)" />
+          <Ionicons name="time-outline" size={10} color="rgba(255,255,255,0.8)" />
           <Text
             style={[
               typography.label,
               {
                 color: 'rgba(255,255,255,0.8)',
                 marginLeft: spacing.xxs + 1,
+                fontSize: 9,
               },
             ]}
           >
@@ -109,7 +110,13 @@ export const HeroCard = memo(function HeroCard({ post }: HeroCardProps) {
         <Text
           style={[
             typography.heroTitle,
-            { color: '#FFFFFF', letterSpacing: -0.3 },
+            {
+              color: '#FFFFFF',
+              letterSpacing: -0.3,
+              textShadowColor: 'rgba(0,0,0,0.3)',
+              textShadowOffset: { width: 0, height: 1 },
+              textShadowRadius: 3,
+            },
           ]}
           numberOfLines={3}
         >
@@ -120,13 +127,13 @@ export const HeroCard = memo(function HeroCard({ post }: HeroCardProps) {
             <View
               style={[
                 styles.authorDot,
-                { backgroundColor: '#FFFFFF', marginRight: spacing.sm },
+                { backgroundColor: colors.accent, marginRight: spacing.sm },
               ]}
             />
             <Text
               style={[
                 typography.caption,
-                { color: 'rgba(255,255,255,0.8)', fontWeight: '500' },
+                { color: 'rgba(255,255,255,0.85)' },
               ]}
             >
               {post.authorName}
@@ -148,7 +155,7 @@ export const HeroCard = memo(function HeroCard({ post }: HeroCardProps) {
 
 const styles = StyleSheet.create({
   container: {
-    height: 380,
+    height: 400,
     overflow: 'hidden',
   },
   image: {

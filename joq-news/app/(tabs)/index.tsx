@@ -28,8 +28,10 @@ import { CategorySpotlight } from '../../src/components/feed/CategorySpotlight';
 import { PostFeed } from '../../src/components/feed/PostFeed';
 import { HeroSkeleton, PostCardSkeleton } from '../../src/components/loaders/SkeletonBox';
 import { AppLogo } from '../../src/components/ui/AppLogo';
+import { BreakingNewsBanner } from '../../src/components/ui/BreakingNewsBanner';
 import { CategoryBar } from '../../src/components/ui/CategoryBar';
 import { PressableScale } from '../../src/components/ui/PressableScale';
+import { TrendingTicker } from '../../src/components/ui/TrendingTicker';
 import { WP_CATEGORIES, getCategoryIcon } from '../../src/constants/categories';
 import { usePosts } from '../../src/hooks/usePosts';
 import { useRefreshByUser } from '../../src/hooks/useRefreshByUser';
@@ -143,6 +145,11 @@ export default function HomeScreen() {
           </View>
         </View>
 
+        {/* ── Trending ticker ────────────────────────── */}
+        {trendingPosts.length > 0 && (
+          <TrendingTicker posts={trendingPosts} />
+        )}
+
         {/* ── Category quick bar ─────────────────────── */}
         <CategoryBar
           categories={categories.map((c) => ({ id: c.id, name: c.name, slug: c.slug, count: 0, parentId: 0 }))}
@@ -156,6 +163,11 @@ export default function HomeScreen() {
             }
           }}
         />
+
+        {/* ── Breaking news ────────────────────────── */}
+        {allPosts[1] && (
+          <BreakingNewsBanner post={allPosts[1]} label="LAJM I FUNDIT" />
+        )}
 
         {/* ── Hero story ─────────────────────────────── */}
         {heroPost && <HeroCard post={heroPost} />}

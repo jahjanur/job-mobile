@@ -439,6 +439,32 @@ export default function SettingsScreen() {
             onSelect={setFontSize}
           />
         </SettingRow>
+        {/* Live font preview */}
+        <View
+          style={{
+            paddingVertical: spacing.md,
+            paddingHorizontal: spacing.sm,
+            borderBottomWidth: StyleSheet.hairlineWidth,
+            borderBottomColor: colors.borderLight,
+          }}
+        >
+          <Text
+            style={[
+              typography.bodySm,
+              { color: colors.textTertiary, marginBottom: spacing.xs },
+            ]}
+          >
+            Parashikim:
+          </Text>
+          <Text
+            style={[
+              typography.body,
+              { color: colors.text, lineHeight: typography.body.lineHeight * 1.3 },
+            ]}
+          >
+            Kjo është madhësia aktuale e shkronjave për tekstin e artikujve.
+          </Text>
+        </View>
         <SettingRow label="Redukto lëvizjet" icon="contract-outline">
           <Switch
             value={reduceMotion}

@@ -4,9 +4,11 @@
  * Hurme4 typography, and related articles.
  */
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   Linking,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -17,6 +19,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
+import * as Speech from 'expo-speech';
+import { useSharedValue } from 'react-native-reanimated';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -25,6 +29,7 @@ import { ArticleContent } from '../../src/components/article/ArticleContent';
 import { RelatedArticles } from '../../src/components/article/RelatedArticles';
 import { ArticleDetailSkeleton } from '../../src/components/loaders/SkeletonBox';
 import { ErrorState } from '../../src/components/states/ErrorState';
+import { ReadingProgressBar } from '../../src/components/ui/ReadingProgressBar';
 import { usePost } from '../../src/hooks/usePost';
 import { useBookmarksStore } from '../../src/store/bookmarksStore';
 import { useTheme } from '../../src/theme';
@@ -68,6 +73,18 @@ export default function ArticleScreen() {
   const toggleBookmark = useBookmarksStore((s) => s.toggleBookmark);
 
   const glassBg = dark ? 'rgba(30,30,30,0.85)' : 'rgba(255,255,255,0.9)';
+  const readingProgress = useSharedValue(0);
+
+  const handleScroll = useCallback(
+    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const { contentOffset, contentSize, layoutMeasurement } = e.nativeEvent;
+      const totalScrollable = contentSize.height - layoutMeasurement.height;
+      if (totalScrollable > 0) {
+        readingProgress.value = contentOffset.y / totalScrollable;
+      }
+    },
+    [],
+  );
 
   const handleBookmark = useCallback(() => {
     if (post) {
@@ -88,6 +105,31 @@ export default function ArticleScreen() {
       Linking.openURL(getArticleWebUrl(post));
     }
   }, [post]);
+
+  const [isSpeaking, setIsSpeaking] = useState(false);
+
+  const handleTextToSpeech = useCallback(() => {
+    if (!post) return;
+    if (isSpeaking) {
+      Speech.stop();
+      setIsSpeaking(false);
+      return;
+    }
+    const plainText = post.content
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/\s+/g, ' ')
+      .trim();
+    setIsSpeaking(true);
+    Speech.speak(plainText, {
+      language: 'sq',
+      rate: 0.9,
+      onDone: () => setIsSpeaking(false),
+      onStopped: () => setIsSpeaking(false),
+      onError: () => setIsSpeaking(false),
+    });
+  }, [post, isSpeaking]);
 
   /* ── Floating top bar ─────────────────────────── */
   const TopBar = (
@@ -153,10 +195,13 @@ export default function ArticleScreen() {
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.background }]}>
+      <ReadingProgressBar progress={readingProgress} />
       {TopBar}
 
       <ScrollView
         showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
         contentContainerStyle={{ paddingBottom: spacing.massive + insets.bottom }}
       >
         {/* ── Hero image ───────────────────────────── */}
@@ -326,6 +371,25 @@ export default function ArticleScreen() {
                   Hap në web
                 </Text>
               </Pressable>
+
+            <Pressable onPress={handleTextToSpeech} style={styles.inlineActionBtn}>
+              <Ionicons
+                name={isSpeaking ? 'stop-circle-outline' : 'volume-high-outline'}
+                size={20}
+                color={isSpeaking ? colors.accent : colors.textSecondary}
+              />
+              <Text
+                style={[
+                  typography.caption,
+                  {
+                    color: isSpeaking ? colors.accent : colors.textSecondary,
+                    marginLeft: spacing.xs,
+                  },
+                ]}
+              >
+                {isSpeaking ? 'Ndalo' : 'Dëgjo'}
+              </Text>
+            </Pressable>
           </View>
 
           {/* ── Article body ──────────────────────── */}
