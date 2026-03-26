@@ -61,6 +61,7 @@ export default function CategoriesScreen() {
         return;
       }
       if (entry.slug === 'live') {
+        router.push('/live');
         return;
       }
       if (entry.slug === 'rreth-nesh') {
