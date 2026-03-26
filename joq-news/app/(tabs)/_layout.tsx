@@ -1,5 +1,5 @@
 /**
- * Tab bar — clean bottom navigation with active pill highlight.
+ * Tab bar — filled icons with proper pill background spacing.
  */
 
 import React, { useEffect } from 'react';
@@ -21,81 +21,78 @@ type Ion = ComponentProps<typeof Ionicons>['name'];
 
 const TABS: {
   name: string;
-  filled: Ion;
-  outline: Ion;
+  icon: Ion;
   label: string;
 }[] = [
-  { name: 'index', filled: 'home', outline: 'home-outline', label: 'Ballina' },
-  { name: 'categories', filled: 'grid', outline: 'grid-outline', label: 'Tema' },
-  { name: 'search', filled: 'search', outline: 'search-outline', label: 'Kerko' },
-  { name: 'bookmarks', filled: 'bookmark', outline: 'bookmark-outline', label: 'Ruajtur' },
-  { name: 'settings', filled: 'person', outline: 'person-outline', label: 'Profili' },
+  { name: 'index', icon: 'home', label: 'Ballina' },
+  { name: 'categories', icon: 'grid', label: 'Tema' },
+  { name: 'search', icon: 'search', label: 'Kerko' },
+  { name: 'bookmarks', icon: 'bookmark', label: 'Ruajtur' },
+  { name: 'settings', icon: 'person', label: 'Profili' },
 ];
 
 function TabItem({
-  filled,
-  outline,
+  icon,
   label,
   focused,
   accentColor,
   inactiveColor,
   dark,
 }: {
-  filled: Ion;
-  outline: Ion;
+  icon: Ion;
   label: string;
   focused: boolean;
   accentColor: string;
   inactiveColor: string;
   dark: boolean;
 }) {
-  const pillOpacity = useSharedValue(0);
-  const iconY = useSharedValue(0);
+  const pillScale = useSharedValue(0);
 
   useEffect(() => {
-    pillOpacity.value = withSpring(focused ? 1 : 0, { damping: 15, stiffness: 200 });
-    iconY.value = withSpring(focused ? -1 : 0, { damping: 15, stiffness: 200 });
+    pillScale.value = withSpring(focused ? 1 : 0, { damping: 16, stiffness: 180 });
   }, [focused]);
 
   const pillStyle = useAnimatedStyle(() => ({
-    opacity: pillOpacity.value,
-    transform: [{ scaleX: 0.6 + pillOpacity.value * 0.4 }],
-  }));
-
-  const iconStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: iconY.value }],
+    opacity: pillScale.value,
+    transform: [
+      { scaleX: 0.5 + pillScale.value * 0.5 },
+      { scaleY: 0.8 + pillScale.value * 0.2 },
+    ],
   }));
 
   const color = focused ? accentColor : inactiveColor;
-  const pillBg = dark ? accentColor + '20' : accentColor + '12';
 
   return (
     <View style={styles.tabItem}>
-      {/* Background pill */}
-      <Animated.View
-        style={[styles.pill, { backgroundColor: pillBg }, pillStyle]}
-      />
-
-      {/* Icon + label */}
-      <Animated.View style={[styles.content, iconStyle]}>
-        <Ionicons
-          name={focused ? filled : outline}
-          size={20}
-          color={color}
-        />
-        <Text
+      {/* Pill background — only behind icon */}
+      <View style={styles.iconRow}>
+        <Animated.View
           style={[
-            styles.label,
+            styles.pill,
             {
-              color,
-              fontFamily: focused ? hurme4.semiBold : hurme4.regular,
+              backgroundColor: dark
+                ? accentColor + '25'
+                : accentColor + '15',
             },
+            pillStyle,
           ]}
-          numberOfLines={1}
-        >
-          {label}
-        </Text>
-      </Animated.View>
+        />
+        <Ionicons name={icon} size={20} color={color} />
+      </View>
+
+      {/* Label */}
+      <Text
+        style={[
+          styles.label,
+          {
+            color,
+            fontFamily: focused ? hurme4.bold : hurme4.regular,
+          },
+        ]}
+        numberOfLines={1}
+      >
+        {label}
+      </Text>
     </View>
   );
 }
@@ -104,7 +101,7 @@ export default function TabsLayout() {
   const { colors, dark } = useTheme();
   const insets = useSafeAreaInsets();
 
-  const inactive = dark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.35)';
+  const inactive = dark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.3)';
   const bg = dark ? '#101012' : '#FFFFFF';
   const borderColor = dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
   const bottomSafe = Platform.OS === 'ios' ? Math.max(insets.bottom - 6, 0) : 4;
@@ -116,7 +113,7 @@ export default function TabsLayout() {
         tabBarShowLabel: false,
         tabBarStyle: {
           backgroundColor: bg,
-          height: 56 + bottomSafe,
+          height: 60 + bottomSafe,
           borderTopWidth: StyleSheet.hairlineWidth,
           borderTopColor: borderColor,
           elevation: 0,
@@ -124,7 +121,7 @@ export default function TabsLayout() {
           paddingBottom: bottomSafe,
         },
         tabBarItemStyle: {
-          height: 56,
+          height: 60,
         },
       }}
     >
@@ -135,8 +132,7 @@ export default function TabsLayout() {
           options={{
             tabBarIcon: ({ focused }) => (
               <TabItem
-                filled={tab.filled}
-                outline={tab.outline}
+                icon={tab.icon}
                 label={tab.label}
                 focused={focused}
                 accentColor={colors.accent}
@@ -156,20 +152,23 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    height: 56,
+    height: 60,
+    gap: 4,
+  },
+  iconRow: {
+    width: 56,
+    height: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   pill: {
     position: 'absolute',
-    width: 52,
-    height: 32,
-    borderRadius: 16,
-  },
-  content: {
-    alignItems: 'center',
+    width: 56,
+    height: 28,
+    borderRadius: 14,
   },
   label: {
-    fontSize: 9.5,
-    marginTop: 2,
-    letterSpacing: 0.2,
+    fontSize: 10,
+    letterSpacing: 0.1,
   },
 });
