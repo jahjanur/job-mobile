@@ -1,93 +1,82 @@
 /**
- * Tab navigation — floating pill tab bar with animated icons.
- * Active tab gets a colored background pill + filled icon.
+ * Tab bar — clean minimal design with animated active indicator.
+ * No labels, just icons. Active tab gets a bold line underneath.
  */
 
 import React, { useEffect } from 'react';
-import { Platform, StyleSheet, Text, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { ComponentProps } from 'react';
 import { Tabs } from 'expo-router';
 import Animated, {
+  Easing,
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
+  withTiming,
 } from 'react-native-reanimated';
 
-import { hurme4 } from '../../src/theme/typography';
 import { useTheme } from '../../src/theme';
 
-type IoniconsName = ComponentProps<typeof Ionicons>['name'];
+type Ion = ComponentProps<typeof Ionicons>['name'];
 
 function TabIcon({
-  name,
-  nameOutline,
-  label,
+  filled,
+  outline,
   focused,
-  color,
-  accentColor,
+  tint,
+  muted,
 }: {
-  name: IoniconsName;
-  nameOutline: IoniconsName;
-  label: string;
+  filled: Ion;
+  outline: Ion;
   focused: boolean;
-  color: string;
-  accentColor: string;
+  tint: string;
+  muted: string;
 }) {
-  const scale = useSharedValue(1);
-  const pillWidth = useSharedValue(0);
+  const lineWidth = useSharedValue(0);
+  const iconScale = useSharedValue(1);
 
   useEffect(() => {
-    scale.value = withSpring(focused ? 1.1 : 1, { damping: 12, stiffness: 200 });
-    pillWidth.value = withSpring(focused ? 1 : 0, { damping: 14, stiffness: 180 });
+    lineWidth.value = withTiming(focused ? 20 : 0, {
+      duration: 250,
+      easing: Easing.out(Easing.cubic),
+    });
+    iconScale.value = withTiming(focused ? 1 : 0.92, {
+      duration: 200,
+      easing: Easing.out(Easing.cubic),
+    });
   }, [focused]);
 
-  const iconStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
+  const lineStyle = useAnimatedStyle(() => ({
+    width: lineWidth.value,
+    opacity: lineWidth.value > 0 ? 1 : 0,
   }));
 
-  const pillStyle = useAnimatedStyle(() => ({
-    opacity: pillWidth.value,
-    transform: [{ scaleX: pillWidth.value }],
+  const scaleStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: iconScale.value }],
   }));
 
   return (
-    <View style={styles.tabItem}>
-      {/* Background pill */}
-      <Animated.View
-        style={[
-          styles.pill,
-          { backgroundColor: accentColor + '18' },
-          pillStyle,
-        ]}
-      />
-      <Animated.View style={iconStyle}>
+    <View style={styles.iconContainer}>
+      <Animated.View style={scaleStyle}>
         <Ionicons
-          name={focused ? name : nameOutline}
-          size={21}
-          color={focused ? accentColor : color}
+          name={focused ? filled : outline}
+          size={23}
+          color={focused ? tint : muted}
         />
       </Animated.View>
-      <Text
+      <Animated.View
         style={[
-          styles.label,
-          {
-            color: focused ? accentColor : color,
-            fontFamily: focused ? hurme4.bold : hurme4.regular,
-          },
+          styles.activeLine,
+          { backgroundColor: tint },
+          lineStyle,
         ]}
-        numberOfLines={1}
-      >
-        {label}
-      </Text>
+      />
     </View>
   );
 }
 
 export default function TabsLayout() {
-  const { colors, spacing, dark } = useTheme();
-
-  const barBg = dark ? 'rgba(12,12,14,0.97)' : 'rgba(255,255,255,0.97)';
+  const { colors, dark } = useTheme();
 
   return (
     <Tabs
@@ -99,16 +88,12 @@ export default function TabsLayout() {
           bottom: 0,
           left: 0,
           right: 0,
-          backgroundColor: barBg,
-          borderTopWidth: 0,
+          height: Platform.OS === 'ios' ? 84 : 60,
+          paddingBottom: Platform.OS === 'ios' ? 24 : 8,
+          backgroundColor: dark ? '#0C0C0E' : '#FFFFFF',
+          borderTopWidth: StyleSheet.hairlineWidth,
+          borderTopColor: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)',
           elevation: 0,
-          height: Platform.OS === 'ios' ? 88 : 68,
-          paddingBottom: Platform.OS === 'ios' ? 24 : spacing.sm,
-          paddingTop: 6,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: -4 },
-          shadowOpacity: dark ? 0.4 : 0.08,
-          shadowRadius: 16,
         },
       }}
     >
@@ -116,14 +101,7 @@ export default function TabsLayout() {
         name="index"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon
-              name="home"
-              nameOutline="home-outline"
-              label="Ballina"
-              focused={focused}
-              color={colors.textTertiary}
-              accentColor={colors.accent}
-            />
+            <TabIcon filled="home" outline="home-outline" focused={focused} tint={colors.accent} muted={colors.textTertiary} />
           ),
         }}
       />
@@ -131,14 +109,7 @@ export default function TabsLayout() {
         name="categories"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon
-              name="grid"
-              nameOutline="grid-outline"
-              label="Tema"
-              focused={focused}
-              color={colors.textTertiary}
-              accentColor={colors.accent}
-            />
+            <TabIcon filled="grid" outline="grid-outline" focused={focused} tint={colors.accent} muted={colors.textTertiary} />
           ),
         }}
       />
@@ -146,14 +117,7 @@ export default function TabsLayout() {
         name="search"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon
-              name="search"
-              nameOutline="search-outline"
-              label="Kerko"
-              focused={focused}
-              color={colors.textTertiary}
-              accentColor={colors.accent}
-            />
+            <TabIcon filled="search" outline="search-outline" focused={focused} tint={colors.accent} muted={colors.textTertiary} />
           ),
         }}
       />
@@ -161,14 +125,7 @@ export default function TabsLayout() {
         name="bookmarks"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon
-              name="bookmark"
-              nameOutline="bookmark-outline"
-              label="Ruajtur"
-              focused={focused}
-              color={colors.textTertiary}
-              accentColor={colors.accent}
-            />
+            <TabIcon filled="bookmark" outline="bookmark-outline" focused={focused} tint={colors.accent} muted={colors.textTertiary} />
           ),
         }}
       />
@@ -176,14 +133,7 @@ export default function TabsLayout() {
         name="settings"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon
-              name="settings"
-              nameOutline="settings-outline"
-              label="Me shume"
-              focused={focused}
-              color={colors.textTertiary}
-              accentColor={colors.accent}
-            />
+            <TabIcon filled="menu" outline="menu-outline" focused={focused} tint={colors.accent} muted={colors.textTertiary} />
           ),
         }}
       />
@@ -192,24 +142,14 @@ export default function TabsLayout() {
 }
 
 const styles = StyleSheet.create({
-  tabItem: {
+  iconContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    minWidth: 56,
+    paddingTop: 8,
   },
-  pill: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    borderRadius: 16,
-  },
-  label: {
-    fontSize: 9,
-    letterSpacing: 0.2,
-    marginTop: 3,
+  activeLine: {
+    height: 2.5,
+    borderRadius: 1.25,
+    marginTop: 6,
   },
 });
