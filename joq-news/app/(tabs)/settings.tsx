@@ -19,6 +19,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { ComponentProps } from 'react';
+import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useRouter } from 'expo-router';
@@ -490,7 +491,13 @@ export default function SettingsScreen() {
         <SettingRow label="Dridhje kur shtypni" icon="phone-portrait-outline" isLast>
           <Switch
             value={hapticFeedback}
-            onValueChange={setHapticFeedback}
+            onValueChange={(val) => {
+              setHapticFeedback(val);
+              if (val) {
+                // Fire a test vibration so user feels it works
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              }
+            }}
             trackColor={switchColors}
             thumbColor="#FFFFFF"
           />

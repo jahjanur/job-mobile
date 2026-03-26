@@ -3,7 +3,7 @@
  * Respects the "reduce motion" user preference — skips animation if enabled.
  */
 
-import React, { type ReactNode } from 'react';
+import React, { type ReactNode, useEffect } from 'react';
 import { type StyleProp, type ViewStyle } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -31,16 +31,24 @@ export function PressableScale({
   scaleTo = 0.97,
 }: PressableScaleProps) {
   const scale = useSharedValue(1);
+  const noAnimation = useSharedValue(false);
   const reduceMotion = usePreferencesStore((s) => s.reduceMotion);
+
+  // Sync JS state to shared value so worklets can read it
+  useEffect(() => {
+    noAnimation.value = reduceMotion;
+  }, [reduceMotion]);
 
   const gesture = Gesture.Tap()
     .onBegin(() => {
-      if (!reduceMotion) {
+      'worklet';
+      if (!noAnimation.value) {
         scale.value = withSpring(scaleTo, SPRING_CONFIG);
       }
     })
     .onFinalize((_, success) => {
-      if (!reduceMotion) {
+      'worklet';
+      if (!noAnimation.value) {
         scale.value = withSpring(1, SPRING_CONFIG);
       }
       if (success) {
