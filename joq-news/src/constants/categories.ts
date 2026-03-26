@@ -31,11 +31,17 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
   {
     title: 'Kryesore',
     entries: [
+      // Kreu = Home/main page
       { id: 3, slug: 'home', name: 'Kreu', icon: 'home-outline' },
-      { id: 6, slug: 'vec-e-jona', name: 'Veç e jona', icon: 'diamond-outline' },
+      // Veç e jona = "Only ours" — JOQ exclusive stories
+      { id: 6, slug: 'vec-e-jona', name: 'Veç e jona', icon: 'flame-outline' },
+      // Shqipëri = Albania news
       { id: 82, slug: 'lajme', name: 'Shqipëri', icon: 'flag-outline', flag: '\u{1F1E6}\u{1F1F1}' },
-      { id: 62245, slug: 'kck', name: 'Dora Sekrete', icon: 'eye-outline' },
-      { id: 85, slug: 'si-te', name: 'Si sot', icon: 'today-outline' },
+      // Dora Sekrete = "Secret Hand" — investigative journalism
+      { id: 62245, slug: 'kck', name: 'Dora Sekrete', icon: 'hand-left-outline' },
+      // Si sot = "Like today" — on this day in history
+      { id: 85, slug: 'si-te', name: 'Si sot', icon: 'calendar-outline' },
+      // KAPE = Coffee talk show (external link)
       {
         id: null,
         slug: 'kape',
@@ -43,35 +49,49 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
         icon: 'cafe-outline',
         externalUrl: 'https://kape.net',
       },
-      { id: null, slug: 'live', name: 'Live', icon: 'radio-outline' },
+      // Live = Live streaming
+      { id: null, slug: 'live', name: 'Live', icon: 'videocam-outline' },
     ],
   },
   {
     title: 'Rajoni & Bota',
     entries: [
+      // Kosovo news
       { id: 37958, slug: 'kosova', name: 'Kosovë', icon: 'location-outline', flag: '\u{1F1FD}\u{1F1F0}' },
+      // North Macedonia news
       { id: 47302, slug: 'maqedoni', name: 'Maqedoni', icon: 'navigate-outline', flag: '\u{1F1F2}\u{1F1F0}' },
-      { id: 37, slug: 'bota', name: 'Përtej', icon: 'globe-outline' },
+      // Përtej = "Beyond" — international/world news
+      { id: 37, slug: 'bota', name: 'Përtej', icon: 'earth-outline' },
     ],
   },
   {
     title: 'Lifestyle & Interes',
     entries: [
-      { id: 65, slug: 'kuriozitete', name: 'Kuriozitete', icon: 'sparkles-outline' },
+      // Kuriozitete = Curiosities / fun facts
+      { id: 65, slug: 'kuriozitete', name: 'Kuriozitete', icon: 'bulb-outline' },
+      // Thashetheme = Gossip / celebrity talk
       { id: 39, slug: 'thashetheme', name: 'Thashetheme', icon: 'chatbubbles-outline' },
+      // Udhëtime = Travel
       { id: 33, slug: 'udhetime', name: 'Udhëtime', icon: 'airplane-outline' },
-      { id: 66, slug: 'shendeti', name: 'Shëndeti', icon: 'fitness-outline' },
+      // Shëndeti = Health & wellness
+      { id: 66, slug: 'shendeti', name: 'Shëndeti', icon: 'heart-outline' },
+      // Libra = Books & reading
       { id: null, slug: 'libra', name: 'Libra', icon: 'book-outline' },
+      // Animals
       { id: null, slug: 'animals', name: 'Animals', icon: 'paw-outline' },
-      { id: 45, slug: 'sport', name: 'Sport', icon: 'football-outline' },
-      { id: 32, slug: 'teknologji', name: 'Teknologji', icon: 'hardware-chip-outline' },
+      // Sport
+      { id: 45, slug: 'sport', name: 'Sport', icon: 'trophy-outline' },
+      // Teknologji = Technology
+      { id: 32, slug: 'teknologji', name: 'Teknologji', icon: 'laptop-outline' },
     ],
   },
   {
     title: 'Të tjera',
     entries: [
-      { id: 89194, slug: 'persekutimi-ndaj-joq', name: 'Persekutimi ndaj JOQ', icon: 'shield-outline' },
-      { id: null, slug: 'rreth-nesh', name: 'Rreth nesh', icon: 'information-circle-outline' },
+      // Persekutimi ndaj JOQ = Persecution/pressure against JOQ
+      { id: 89194, slug: 'persekutimi-ndaj-joq', name: 'Persekutimi ndaj JOQ', icon: 'megaphone-outline' },
+      // Rreth nesh = About us
+      { id: null, slug: 'rreth-nesh', name: 'Rreth nesh', icon: 'people-outline' },
     ],
   },
 ];
