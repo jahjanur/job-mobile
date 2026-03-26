@@ -5,7 +5,7 @@
  * and paginated latest feed — each section visually distinct.
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -54,6 +54,8 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
+
   const {
     data,
     isLoading,
@@ -62,7 +64,7 @@ export default function HomeScreen() {
     hasNextPage,
     isFetchingNextPage,
     refetch,
-  } = usePosts();
+  } = usePosts(selectedCategoryId ? { categoryId: selectedCategoryId } : {});
 
   const { isRefreshing, onRefresh } = useRefreshByUser(refetch);
   const { data: trendingData } = useTrendingPosts({ limit: 6 });
@@ -73,12 +75,13 @@ export default function HomeScreen() {
     [data],
   );
 
-  // Split posts into visual sections
-  const heroPost = allPosts[0];
-  const trendingPosts = trendingData ?? allPosts.slice(1, 7);
-  const spotlightPost = allPosts[7];
-  const gridPosts = allPosts.slice(3, 7);
-  const feedPosts = allPosts.slice(8);
+  // Split posts into visual sections (only when not filtering)
+  const isFiltering = selectedCategoryId !== null;
+  const heroPost = isFiltering ? null : allPosts[0];
+  const trendingPosts = isFiltering ? [] : (trendingData ?? allPosts.slice(1, 7));
+  const spotlightPost = isFiltering ? null : allPosts[7];
+  const gridPosts = isFiltering ? [] : allPosts.slice(3, 7);
+  const feedPosts = isFiltering ? allPosts : allPosts.slice(8);
 
   const todayFormatted = formatTodayAlbanian();
 
@@ -105,65 +108,82 @@ export default function HomeScreen() {
 
     return (
       <View style={{ paddingTop: insets.top + spacing.md }}>
-        {/* ── Branded header ─────────────────────────── */}
+        {/* ── Header ──────────────────────────────────── */}
         <View
           style={[
             styles.headerRow,
             {
               marginHorizontal: spacing.lg,
-              marginBottom: spacing.xxl,
+              marginBottom: spacing.md,
             },
           ]}
         >
-          <View>
-            <AppLogo width={120} />
-            <Text
+          <AppLogo width={110} />
+          <View style={styles.headerActions}>
+            <Pressable
+              onPress={() => router.push('/(tabs)/search')}
               style={[
-                typography.caption,
+                styles.headerBtn,
                 {
-                  color: colors.textTertiary,
-                  marginTop: spacing.xxs,
-                  textTransform: 'capitalize',
+                  backgroundColor: colors.surface,
+                  borderRadius: radius.full,
+                  borderWidth: dark ? 0 : StyleSheet.hairlineWidth,
+                  borderColor: colors.borderLight,
                 },
               ]}
+              hitSlop={6}
             >
-              {todayFormatted}
-            </Text>
-          </View>
-          <View
-            style={[
-              styles.notifButton,
-              {
-                backgroundColor: colors.surface,
-                borderRadius: radius.full,
-                borderWidth: dark ? 0 : StyleSheet.hairlineWidth,
-                borderColor: colors.borderLight,
-              },
-            ]}
-          >
-            <Ionicons name="notifications-outline" size={18} color={colors.icon} />
+              <Ionicons name="search-outline" size={18} color={colors.icon} />
+            </Pressable>
+            <Pressable
+              onPress={() => router.push('/(tabs)/settings')}
+              style={[
+                styles.headerBtn,
+                {
+                  backgroundColor: colors.surface,
+                  borderRadius: radius.full,
+                  marginLeft: spacing.sm,
+                  borderWidth: dark ? 0 : StyleSheet.hairlineWidth,
+                  borderColor: colors.borderLight,
+                },
+              ]}
+              hitSlop={6}
+            >
+              <Ionicons name="person-outline" size={18} color={colors.icon} />
+            </Pressable>
           </View>
         </View>
 
+        {/* Date line */}
+        <Text
+          style={[
+            typography.caption,
+            {
+              color: colors.textTertiary,
+              marginHorizontal: spacing.lg,
+              marginBottom: spacing.md,
+              textTransform: 'capitalize',
+            },
+          ]}
+        >
+          {todayFormatted}
+        </Text>
+
+        {/* ── Category filter bar ─────────────────────── */}
+        <CategoryBar
+          categories={categories.map((c) => ({ id: c.id, name: c.name, slug: c.slug, count: 0, parentId: 0 }))}
+          selectedId={selectedCategoryId}
+          onSelect={(catId) => setSelectedCategoryId(catId)}
+        />
+
         {/* ── Trending ticker ────────────────────────── */}
-        {trendingPosts.length > 0 && (
+        {!selectedCategoryId && trendingPosts.length > 0 && (
           <TrendingTicker posts={trendingPosts} />
         )}
 
-        {/* ── Category quick bar ─────────────────────── */}
-        <CategoryBar
-          categories={categories.map((c) => ({ id: c.id, name: c.name, slug: c.slug, count: 0, parentId: 0 }))}
-          selectedId={null}
-          onSelect={(catId) => {
-            if (catId !== null) {
-              const cat = categories.find((c) => c.id === catId);
-              router.push(
-                `/category/${catId}?name=${encodeURIComponent(cat?.name ?? '')}`,
-              );
-            }
-          }}
-        />
-
+        {/* ── When filtering by category, skip the rich sections ── */}
+        {selectedCategoryId ? null : (
+          <>
         {/* ── Breaking news ────────────────────────── */}
         {allPosts[1] && (
           <BreakingNewsBanner post={allPosts[1]} label="LAJM I FUNDIT" />
@@ -730,10 +750,13 @@ export default function HomeScreen() {
             </Text>
           </View>
         </View>
+          </>
+        )}
       </View>
     );
   }, [
     isLoading,
+    selectedCategoryId,
     heroPost,
     trendingPosts,
     spotlightPost,
@@ -777,9 +800,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  notifButton: {
-    width: 42,
-    height: 42,
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerBtn: {
+    width: 38,
+    height: 38,
     alignItems: 'center',
     justifyContent: 'center',
   },
