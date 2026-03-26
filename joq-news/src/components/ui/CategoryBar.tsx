@@ -1,9 +1,9 @@
 /**
- * Horizontal scrollable category bar for quick navigation.
+ * Horizontal scrollable category bar for quick filtering.
  * "Të gjitha" is always first, followed by all categories.
  */
 
-import React, { memo } from 'react';
+import React from 'react';
 import { ScrollView, View } from 'react-native';
 
 import type { AppCategory } from '../../api/types';
@@ -16,7 +16,7 @@ interface CategoryBarProps {
   onSelect: (categoryId: number | null) => void;
 }
 
-export const CategoryBar = memo(function CategoryBar({
+export function CategoryBar({
   categories,
   selectedId,
   onSelect,
@@ -27,6 +27,7 @@ export const CategoryBar = memo(function CategoryBar({
     <View style={{ marginBottom: spacing.md }}>
       <ScrollView
         horizontal
+        nestedScrollEnabled
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{
           paddingHorizontal: spacing.lg,
@@ -50,4 +51,4 @@ export const CategoryBar = memo(function CategoryBar({
       </ScrollView>
     </View>
   );
-});
+}

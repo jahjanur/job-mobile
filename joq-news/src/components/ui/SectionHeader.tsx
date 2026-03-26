@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { useTheme } from '../../theme';
 
@@ -27,12 +27,13 @@ export function SectionHeader({ title, action, onAction }: SectionHeaderProps) {
         {title}
       </Text>
       {action && onAction && (
-        <Text
-          onPress={onAction}
-          style={[typography.captionMedium, { color: colors.accent }]}
-        >
-          {action}
-        </Text>
+        <TouchableOpacity onPress={onAction} activeOpacity={0.6} hitSlop={8}>
+          <Text
+            style={[typography.captionMedium, { color: colors.accent }]}
+          >
+            {action}
+          </Text>
+        </TouchableOpacity>
       )}
     </View>
   );

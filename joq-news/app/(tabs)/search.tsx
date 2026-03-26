@@ -9,6 +9,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -74,8 +75,7 @@ export default function SearchScreen() {
   const showEmpty =
     !showResults && !showRecent && searchInput.length === 0;
 
-  const SearchHeader = useMemo(
-    () => (
+  const SearchHeader = (
       <View
         style={{
           paddingTop: insets.top + spacing.lg,
@@ -196,18 +196,6 @@ export default function SearchScreen() {
           </View>
         )}
       </View>
-    ),
-    [
-      insets.top,
-      spacing,
-      colors,
-      typography,
-      radius,
-      dark,
-      searchInput,
-      showRecent,
-      recentSearches,
-    ],
   );
 
   if (showEmpty) {
@@ -227,8 +215,9 @@ export default function SearchScreen() {
           </Text>
           <View style={styles.topicsGrid}>
             {suggestedTopics.map((cat) => (
-              <Pressable
+              <TouchableOpacity
                 key={cat.slug}
+                activeOpacity={0.7}
                 onPress={() =>
                   router.push(
                     `/category/${cat.id}?name=${encodeURIComponent(cat.name)}`,
@@ -265,7 +254,7 @@ export default function SearchScreen() {
                 >
                   {cat.name}
                 </Text>
-              </Pressable>
+              </TouchableOpacity>
             ))}
           </View>
         </View>

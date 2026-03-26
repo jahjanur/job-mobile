@@ -13,6 +13,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -119,8 +120,9 @@ export default function HomeScreen() {
         >
           <AppLogo width={110} />
           <View style={styles.headerActions}>
-            <Pressable
+            <TouchableOpacity
               onPress={() => router.navigate('/search')}
+              activeOpacity={0.6}
               style={[
                 styles.headerBtn,
                 {
@@ -130,12 +132,13 @@ export default function HomeScreen() {
                   borderColor: colors.borderLight,
                 },
               ]}
-              hitSlop={6}
+              hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
             >
               <Ionicons name="search-outline" size={18} color={colors.icon} />
-            </Pressable>
-            <Pressable
+            </TouchableOpacity>
+            <TouchableOpacity
               onPress={() => router.navigate('/settings')}
+              activeOpacity={0.6}
               style={[
                 styles.headerBtn,
                 {
@@ -146,10 +149,10 @@ export default function HomeScreen() {
                   borderColor: colors.borderLight,
                 },
               ]}
-              hitSlop={6}
+              hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
             >
               <Ionicons name="person-outline" size={18} color={colors.icon} />
-            </Pressable>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -222,6 +225,7 @@ export default function HomeScreen() {
             </View>
             <ScrollView
               horizontal
+              nestedScrollEnabled
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{
                 paddingHorizontal: spacing.lg,
@@ -420,6 +424,7 @@ export default function HomeScreen() {
         </View>
         <ScrollView
           horizontal
+          nestedScrollEnabled
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{
             paddingHorizontal: spacing.lg,
@@ -431,8 +436,9 @@ export default function HomeScreen() {
             const color = PILL_COLORS[i % PILL_COLORS.length];
             const iconName = getCategoryIcon(cat.slug);
             return (
-              <Pressable
+              <TouchableOpacity
                 key={cat.id}
+                activeOpacity={0.7}
                 onPress={() =>
                   router.push(
                     `/category/${cat.id}?name=${encodeURIComponent(cat.name)}`,
@@ -469,7 +475,7 @@ export default function HomeScreen() {
                 >
                   {cat.name}
                 </Text>
-              </Pressable>
+              </TouchableOpacity>
             );
           })}
         </ScrollView>

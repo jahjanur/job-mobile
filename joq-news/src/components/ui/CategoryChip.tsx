@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 
 import { useTheme } from '../../theme';
 
@@ -17,8 +17,9 @@ export function CategoryChip({
   const { colors, spacing, radius, typography } = useTheme();
 
   return (
-    <Pressable
+    <TouchableOpacity
       onPress={onPress}
+      activeOpacity={0.7}
       style={[
         styles.chip,
         {
@@ -42,7 +43,7 @@ export function CategoryChip({
       >
         {label}
       </Text>
-    </Pressable>
+    </TouchableOpacity>
   );
 }
 
