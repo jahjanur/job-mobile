@@ -140,6 +140,7 @@ export default function TabsLayout() {
         name="live"
         options={{
           href: null,
+          freezeOnBlur: false,
         }}
       />
     </Tabs>

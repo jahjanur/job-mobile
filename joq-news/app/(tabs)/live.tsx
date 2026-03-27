@@ -15,7 +15,7 @@ import {
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
 import { Audio, ResizeMode, Video, type AVPlaybackStatus } from 'expo-av';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
   Easing,
@@ -83,14 +83,19 @@ export default function LiveScreen() {
     );
     Audio.setAudioModeAsync({ playsInSilentModeIOS: true, staysActiveInBackground: false });
 
-    // Stop video when leaving this screen
-    return () => {
-      videoRef.current?.stopAsync();
-      videoRef.current?.unloadAsync();
-    };
   }, []);
 
   const dotStyle = useAnimatedStyle(() => ({ opacity: pulse.value }));
+
+  // Stop video when navigating away, resume when coming back
+  useFocusEffect(
+    useCallback(() => {
+      videoRef.current?.playAsync();
+      return () => {
+        videoRef.current?.pauseAsync();
+      };
+    }, []),
+  );
 
   const onStatus = useCallback((s: AVPlaybackStatus) => {
     if (!s.isLoaded) { if (s.error) { setError(true); setBuffering(false); } return; }
@@ -116,7 +121,7 @@ export default function LiveScreen() {
 
       {/* ── Header ───────────────────────────────── */}
       <View style={[s.header, { paddingTop: insets.top + 10 }]}>
-        <View style={s.headerSide}>
+        <View style={[s.headerSide, { justifyContent: 'flex-start' }]}>
           <TouchableOpacity onPress={() => router.back()} activeOpacity={0.6} style={s.headerBtn}>
             <Ionicons name="arrow-back" size={20} color="#FFF" />
           </TouchableOpacity>
@@ -251,7 +256,7 @@ const s = StyleSheet.create({
     backgroundColor: '#111',
   },
   headerSide: {
-    flexDirection: 'row', alignItems: 'center', width: 80,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', width: 80,
   },
   headerCenter: {
     flex: 1, alignItems: 'center', justifyContent: 'center',
