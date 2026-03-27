@@ -1,6 +1,6 @@
 /**
- * Categories screen — TVA News banner on top,
- * then all categories as a clean vertical list grouped by section.
+ * Categories screen — TVA News banner + grouped category lists
+ * with color-coded icons, descriptions, and article counts.
  */
 
 import React, { useCallback, useEffect } from 'react';
@@ -31,6 +31,38 @@ import {
 } from '../../src/constants/categories';
 import { useTheme } from '../../src/theme';
 import { hurme4 } from '../../src/theme/typography';
+
+/** Color + description per group */
+const GROUP_META: Record<string, { color: string; desc: string }> = {
+  'Kryesore': { color: '#E31E24', desc: 'Lajmet me te rendesishme' },
+  'Rajoni & Bota': { color: '#2563EB', desc: 'Nga rajoni dhe bota' },
+  'Lifestyle & Interes': { color: '#8B5CF6', desc: 'Jeta, kuriozitete dhe me shume' },
+  'Te tjera': { color: '#6B7280', desc: 'Informacione shtese' },
+};
+
+/** Short description per category slug */
+const CAT_DESC: Record<string, string> = {
+  'home': 'Faqja kryesore',
+  'vec-e-jona': 'Ekskluzive nga JOQ',
+  'lajme': 'Lajme nga Shqiperia',
+  'kck': 'Investigime dhe zbulime',
+  'si-te': 'Kete dite ne histori',
+  'kape': 'Emisioni i mengjesit',
+  'live': 'Transmetim drejtperdrejt',
+  'kosova': 'Lajme nga Kosova',
+  'maqedoni': 'Lajme nga Maqedonia',
+  'bota': 'Lajme nderkombetare',
+  'kuriozitete': 'Fakte interesante',
+  'thashetheme': 'Bota e showbizit',
+  'udhetime': 'Destinacione dhe udherime',
+  'shendeti': 'Keshilla per shendetin',
+  'libra': 'Bota e librave',
+  'animals': 'Bota e kafsehve',
+  'sport': 'Futboll, basketboll dhe me shume',
+  'teknologji': 'Risi dhe inovacione',
+  'persekutimi-ndaj-joq': 'Presioni ndaj medias',
+  'rreth-nesh': 'Kush jemi ne',
+};
 
 export default function CategoriesScreen() {
   const { colors, spacing, radius, typography, dark } = useTheme();
@@ -65,8 +97,8 @@ export default function CategoriesScreen() {
     [router],
   );
 
-  const rowBg = dark ? 'rgba(255,255,255,0.03)' : colors.card;
-  const rowBorder = dark ? 'rgba(255,255,255,0.05)' : colors.borderLight;
+  const cardBg = dark ? 'rgba(255,255,255,0.03)' : colors.card;
+  const divider = dark ? 'rgba(255,255,255,0.04)' : colors.borderLight;
 
   return (
     <View style={[st.screen, { backgroundColor: colors.background }]}>
@@ -117,109 +149,125 @@ export default function CategoriesScreen() {
         </TouchableOpacity>
 
         {/* ── Category groups ────────────────────── */}
-        {CATEGORY_GROUPS.map((group) => (
-          <View key={group.title} style={{ marginTop: spacing.xxl }}>
-            {/* Section label */}
-            <Text
-              style={[
-                typography.label,
-                {
-                  color: colors.textTertiary,
-                  paddingHorizontal: spacing.lg,
-                  marginBottom: spacing.sm,
-                  letterSpacing: 0.8,
-                },
-              ]}
-            >
-              {group.title.toUpperCase()}
-            </Text>
+        {CATEGORY_GROUPS.map((group) => {
+          const meta = GROUP_META[group.title] ?? GROUP_META['Te tjera'];
 
-            {/* List of categories */}
-            <View
-              style={[
-                st.groupCard,
-                {
-                  marginHorizontal: spacing.lg,
-                  backgroundColor: rowBg,
-                  borderRadius: radius.lg,
-                  borderWidth: dark ? 1 : StyleSheet.hairlineWidth,
-                  borderColor: rowBorder,
-                  overflow: 'hidden',
-                },
-              ]}
-            >
-              {group.entries.map((entry, i) => {
-                const isLast = i === group.entries.length - 1;
-                const isLive = entry.slug === 'live';
-                const isExternal = !!entry.externalUrl;
+          return (
+            <View key={group.title} style={{ marginTop: spacing.xxl }}>
+              {/* Section header */}
+              <View style={{ paddingHorizontal: spacing.lg, marginBottom: spacing.sm }}>
+                <View style={st.sectionRow}>
+                  <View style={[st.sectionDot, { backgroundColor: meta.color }]} />
+                  <Text style={[typography.h3, { color: colors.text, fontSize: 16, marginLeft: spacing.sm }]}>
+                    {group.title}
+                  </Text>
+                </View>
+                <Text
+                  style={[
+                    typography.caption,
+                    { color: colors.textTertiary, marginTop: 2, marginLeft: spacing.lg + spacing.sm },
+                  ]}
+                >
+                  {meta.desc}
+                </Text>
+              </View>
 
-                return (
-                  <TouchableOpacity
-                    key={entry.slug}
-                    onPress={() => handlePress(entry)}
-                    activeOpacity={0.6}
-                    style={[
-                      st.row,
-                      {
-                        paddingHorizontal: spacing.lg,
-                        paddingVertical: spacing.md + 2,
-                        borderBottomWidth: isLast ? 0 : StyleSheet.hairlineWidth,
-                        borderBottomColor: rowBorder,
-                      },
-                    ]}
-                  >
-                    {/* Icon */}
-                    <View
+              {/* Card */}
+              <View
+                style={[
+                  st.groupCard,
+                  {
+                    marginHorizontal: spacing.lg,
+                    backgroundColor: cardBg,
+                    borderRadius: radius.lg,
+                    borderWidth: dark ? 1 : StyleSheet.hairlineWidth,
+                    borderColor: dark ? 'rgba(255,255,255,0.06)' : divider,
+                    overflow: 'hidden',
+                  },
+                ]}
+              >
+                {group.entries.map((entry, i) => {
+                  const isLast = i === group.entries.length - 1;
+                  const isLive = entry.slug === 'live';
+                  const isExternal = !!entry.externalUrl;
+                  const desc = CAT_DESC[entry.slug];
+
+                  return (
+                    <TouchableOpacity
+                      key={entry.slug}
+                      onPress={() => handlePress(entry)}
+                      activeOpacity={0.55}
                       style={[
-                        st.iconBox,
+                        st.row,
                         {
-                          backgroundColor: colors.accent + '10',
-                          borderRadius: radius.md,
+                          paddingHorizontal: spacing.lg,
+                          paddingVertical: 13,
+                          borderBottomWidth: isLast ? 0 : StyleSheet.hairlineWidth,
+                          borderBottomColor: divider,
                         },
                       ]}
                     >
-                      {entry.flag ? (
-                        <Text style={{ fontSize: 18 }}>{entry.flag}</Text>
-                      ) : (
-                        <Ionicons name={entry.icon} size={18} color={colors.accent} />
-                      )}
-                    </View>
-
-                    {/* Name + badge */}
-                    <View style={st.rowContent}>
-                      <Text
+                      {/* Icon */}
+                      <View
                         style={[
-                          typography.bodyMedium,
-                          { color: colors.text, fontSize: 14 },
+                          st.iconBox,
+                          {
+                            backgroundColor: meta.color + '12',
+                            borderRadius: 10,
+                          },
                         ]}
-                        numberOfLines={1}
                       >
-                        {entry.name}
-                      </Text>
-                    </View>
+                        {entry.flag ? (
+                          <Text style={{ fontSize: 18 }}>{entry.flag}</Text>
+                        ) : (
+                          <Ionicons name={entry.icon} size={18} color={meta.color} />
+                        )}
+                      </View>
 
-                    {/* Right side indicators */}
-                    {isLive && (
-                      <View style={st.liveMini}>
-                        <Animated.View style={[st.liveMiniDot, dotStyle]} />
-                        <Text style={st.liveMiniText}>LIVE</Text>
+                      {/* Text */}
+                      <View style={st.rowContent}>
+                        <Text
+                          style={[
+                            { color: colors.text, fontFamily: hurme4.semiBold, fontSize: 14 },
+                          ]}
+                          numberOfLines={1}
+                        >
+                          {entry.name}
+                        </Text>
+                        {desc && (
+                          <Text
+                            style={[
+                              typography.caption,
+                              { color: colors.textTertiary, marginTop: 1, fontSize: 11 },
+                            ]}
+                            numberOfLines={1}
+                          >
+                            {desc}
+                          </Text>
+                        )}
                       </View>
-                    )}
-                    {isExternal && (
-                      <View style={st.externalTag}>
-                        <Text style={st.externalText}>WEB</Text>
-                        <Ionicons name="open-outline" size={10} color={colors.textTertiary} style={{ marginLeft: 2 }} />
-                      </View>
-                    )}
-                    {!isLive && !isExternal && (
-                      <Ionicons name="chevron-forward" size={16} color={colors.textTertiary} />
-                    )}
-                  </TouchableOpacity>
-                );
-              })}
+
+                      {/* Right indicator */}
+                      {isLive ? (
+                        <View style={st.liveMini}>
+                          <Animated.View style={[st.liveMiniDot, dotStyle]} />
+                          <Text style={st.liveMiniText}>LIVE</Text>
+                        </View>
+                      ) : isExternal ? (
+                        <View style={[st.externalTag, { backgroundColor: meta.color + '10', borderRadius: 4 }]}>
+                          <Text style={[st.externalText, { color: meta.color }]}>WEB</Text>
+                          <Ionicons name="open-outline" size={9} color={meta.color} style={{ marginLeft: 2 }} />
+                        </View>
+                      ) : (
+                        <Ionicons name="chevron-forward" size={16} color={colors.textTertiary} />
+                      )}
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
             </View>
-          </View>
-        ))}
+          );
+        })}
       </ScrollView>
     </View>
   );
@@ -228,7 +276,7 @@ export default function CategoriesScreen() {
 const st = StyleSheet.create({
   screen: { flex: 1 },
 
-  // Live banner
+  // Live
   liveBanner: { height: 120, padding: 20, overflow: 'hidden' },
   bgCircle: { position: 'absolute', borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.06)' },
   bgCircle1: { width: 160, height: 160, top: -40, right: -20 },
@@ -246,38 +294,31 @@ const st = StyleSheet.create({
     shadowOpacity: 0.2, shadowRadius: 10, elevation: 6,
   },
 
-  // Group
+  // Section
+  sectionRow: { flexDirection: 'row', alignItems: 'center' },
+  sectionDot: { width: 8, height: 8, borderRadius: 4 },
+
+  // Group card
   groupCard: {},
 
   // Row
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  iconBox: {
-    width: 36, height: 36,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  rowContent: {
-    flex: 1,
-    marginLeft: 12,
-  },
+  row: { flexDirection: 'row', alignItems: 'center' },
+  iconBox: { width: 38, height: 38, alignItems: 'center', justifyContent: 'center' },
+  rowContent: { flex: 1, marginLeft: 12 },
 
-  // Live mini badge
+  // Live mini
   liveMini: {
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: '#E31E24', borderRadius: 4,
-    paddingHorizontal: 6, paddingVertical: 2,
+    paddingHorizontal: 7, paddingVertical: 3,
   },
   liveMiniDot: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#FFF', marginRight: 3 },
   liveMiniText: { color: '#FFF', fontFamily: hurme4.bold, fontSize: 8, letterSpacing: 0.5 },
 
-  // External tag
+  // External
   externalTag: {
     flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: 6, paddingVertical: 3,
   },
-  externalText: {
-    fontFamily: hurme4.semiBold, fontSize: 9,
-    color: '#9CA3AF', letterSpacing: 0.5,
-  },
+  externalText: { fontFamily: hurme4.bold, fontSize: 9, letterSpacing: 0.5 },
 });
