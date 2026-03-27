@@ -1,12 +1,12 @@
 /**
- * Live TV — TVA News live stream via HLS.
- * Always-visible controls, fullscreen support, channel info.
+ * Live TV — TVA News live stream with trending news feed below.
  */
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Dimensions,
+  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
@@ -27,13 +27,16 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { PostCard } from '../src/components/cards/PostCard';
+import { useTrendingPosts } from '../src/hooks/useTrendingPosts';
+import { useTheme } from '../src/theme';
 import { hurme4 } from '../src/theme/typography';
 
 const LIVE_URL = 'https://live.tvanews.com/live/tvanews/play.m3u8';
 const SCREEN_W = Dimensions.get('window').width;
 const VIDEO_H = (SCREEN_W * 9) / 16;
 
-/* ── Equalizer bars ────────────────────────────── */
+/* ── Equalizer ─────────────────────────────────── */
 function EqBar({ min, max, dur, color }: { min: number; max: number; dur: number; color: string }) {
   const h = useSharedValue(min);
   useEffect(() => {
@@ -42,48 +45,44 @@ function EqBar({ min, max, dur, color }: { min: number; max: number; dur: number
       withTiming(min, { duration: dur }),
     ), -1);
   }, []);
-  const style = useAnimatedStyle(() => ({ height: h.value * 16 }));
-  return <Animated.View style={[{ width: 3, borderRadius: 1.5, backgroundColor: color }, style]} />;
+  const style = useAnimatedStyle(() => ({ height: h.value * 14 }));
+  return <Animated.View style={[{ width: 2.5, borderRadius: 1.5, backgroundColor: color }, style]} />;
 }
 
 function Equalizer({ color }: { color: string }) {
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'flex-end', height: 16, gap: 2 }}>
+    <View style={{ flexDirection: 'row', alignItems: 'flex-end', height: 14, gap: 2 }}>
       <EqBar min={0.2} max={0.9} dur={380} color={color} />
       <EqBar min={0.3} max={1.0} dur={320} color={color} />
       <EqBar min={0.15} max={0.85} dur={420} color={color} />
       <EqBar min={0.25} max={0.95} dur={360} color={color} />
-      <EqBar min={0.2} max={0.8} dur={400} color={color} />
     </View>
   );
 }
 
-/* ── Main screen ───────────────────────────────── */
+/* ── Main ──────────────────────────────────────── */
 export default function LiveScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { colors, spacing, radius, typography, dark } = useTheme();
   const videoRef = useRef<Video>(null);
 
   const [buffering, setBuffering] = useState(true);
   const [error, setError] = useState(false);
   const [muted, setMuted] = useState(false);
 
+  const { data: trendingPosts } = useTrendingPosts({ limit: 10 });
+
   const pulse = useSharedValue(1);
-  const glow = useSharedValue(1);
 
   useEffect(() => {
     pulse.value = withRepeat(
       withTiming(0.3, { duration: 700, easing: Easing.inOut(Easing.ease) }), -1, true,
     );
-    glow.value = withRepeat(withSequence(
-      withTiming(1.4, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
-      withTiming(1, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
-    ), -1);
     Audio.setAudioModeAsync({ playsInSilentModeIOS: true, staysActiveInBackground: true });
   }, []);
 
   const dotStyle = useAnimatedStyle(() => ({ opacity: pulse.value }));
-  const glowStyle = useAnimatedStyle(() => ({ transform: [{ scale: glow.value }], opacity: 0.12 }));
 
   const onStatus = useCallback((s: AVPlaybackStatus) => {
     if (!s.isLoaded) { if (s.error) { setError(true); setBuffering(false); } return; }
@@ -104,157 +103,183 @@ export default function LiveScreen() {
   }, []);
 
   return (
-    <View style={st.screen}>
+    <View style={[s.screen, { backgroundColor: dark ? '#08080A' : colors.background }]}>
       <StatusBar barStyle="light-content" />
 
-      {/* ── Top bar (always visible) ─────────────── */}
-      <View style={[st.topBar, { paddingTop: insets.top + 8 }]}>
-        <TouchableOpacity onPress={() => router.back()} activeOpacity={0.6} style={st.topBtn}>
-          <Ionicons name="chevron-down" size={22} color="#FFF" />
+      {/* ── Header ───────────────────────────────── */}
+      <View style={[s.header, { paddingTop: insets.top + 8 }]}>
+        <TouchableOpacity onPress={() => router.back()} activeOpacity={0.6} style={s.headerBtn}>
+          <Ionicons name="arrow-back" size={20} color="#FFF" />
         </TouchableOpacity>
 
-        <View style={st.livePill}>
-          <Animated.View style={[st.liveDot, dotStyle]} />
-          <Text style={st.liveLabel}>LIVE</Text>
-        </View>
-
-        <View style={st.topRight}>
-          <TouchableOpacity onPress={() => setMuted(!muted)} activeOpacity={0.6} style={st.topBtn}>
-            <Ionicons name={muted ? 'volume-mute' : 'volume-high'} size={19} color="#FFF" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={goFullscreen} activeOpacity={0.6} style={[st.topBtn, { marginLeft: 6 }]}>
-            <Ionicons name="expand-outline" size={19} color="#FFF" />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* ── Video ────────────────────────────────── */}
-      <View style={st.videoWrap}>
-        <Video
-          ref={videoRef}
-          source={{ uri: LIVE_URL }}
-          style={st.video}
-          resizeMode={ResizeMode.CONTAIN}
-          shouldPlay
-          isMuted={muted}
-          isLooping={false}
-          onPlaybackStatusUpdate={onStatus}
-          onError={() => setError(true)}
-        />
-
-        {/* Buffering */}
-        {buffering && !error && (
-          <Animated.View entering={FadeIn} style={st.overlay}>
-            <ActivityIndicator size="large" color="#FFF" />
-            <Text style={st.bufferText}>Duke lidhur transmetimin...</Text>
-          </Animated.View>
-        )}
-
-        {/* Error */}
-        {error && (
-          <Animated.View entering={FadeIn} style={st.overlay}>
-            <Ionicons name="cloud-offline-outline" size={38} color="rgba(255,255,255,0.7)" />
-            <Text style={st.errorTitle}>Transmetimi nuk eshte i disponueshem</Text>
-            <TouchableOpacity onPress={retry} activeOpacity={0.7} style={st.retryBtn}>
-              <Ionicons name="refresh-outline" size={15} color="#FFF" style={{ marginRight: 5 }} />
-              <Text style={st.retryText}>Provo perseri</Text>
-            </TouchableOpacity>
-          </Animated.View>
-        )}
-      </View>
-
-      {/* ── Info panel ───────────────────────────── */}
-      <View style={st.panel}>
-        {/* Glow */}
-        <Animated.View style={[st.glow, glowStyle]} />
-
-        {/* Channel card */}
-        <View style={st.channelCard}>
-          <View style={st.logoBox}>
-            <Ionicons name="tv" size={24} color="#FFF" />
+        <View style={s.headerCenter}>
+          <Ionicons name="tv" size={16} color="#FFF" style={{ marginRight: 6 }} />
+          <Text style={s.headerTitle}>TVA News</Text>
+          <View style={s.livePill}>
+            <Animated.View style={[s.liveDot, dotStyle]} />
+            <Text style={s.liveLabel}>LIVE</Text>
           </View>
-          <View style={{ flex: 1, marginLeft: 12 }}>
-            <Text style={st.channelName}>TVA News</Text>
-            <View style={st.statusRow}>
-              <View style={st.statusPill}>
-                <Animated.View style={[st.statusDot, dotStyle]} />
-                <Text style={st.statusLabel}>DREJTPERDREJT</Text>
+        </View>
+
+        <View style={s.headerRight}>
+          <TouchableOpacity onPress={() => setMuted(!muted)} activeOpacity={0.6} style={s.headerBtn}>
+            <Ionicons name={muted ? 'volume-mute' : 'volume-high'} size={18} color="#FFF" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={goFullscreen} activeOpacity={0.6} style={[s.headerBtn, { marginLeft: 6 }]}>
+            <Ionicons name="expand" size={18} color="#FFF" />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: spacing.massive + 40 }}
+      >
+        {/* ── Video ──────────────────────────────── */}
+        <View style={s.videoWrap}>
+          <Video
+            ref={videoRef}
+            source={{ uri: LIVE_URL }}
+            style={s.video}
+            resizeMode={ResizeMode.CONTAIN}
+            shouldPlay
+            isMuted={muted}
+            isLooping={false}
+            onPlaybackStatusUpdate={onStatus}
+            onError={() => setError(true)}
+          />
+
+          {buffering && !error && (
+            <Animated.View entering={FadeIn} style={s.overlay}>
+              <ActivityIndicator size="large" color="#FFF" />
+              <Text style={s.bufferText}>Duke lidhur transmetimin...</Text>
+            </Animated.View>
+          )}
+
+          {error && (
+            <Animated.View entering={FadeIn} style={s.overlay}>
+              <Ionicons name="cloud-offline-outline" size={36} color="rgba(255,255,255,0.7)" />
+              <Text style={s.errorTitle}>Transmetimi nuk eshte i disponueshem</Text>
+              <TouchableOpacity onPress={retry} activeOpacity={0.7} style={s.retryBtn}>
+                <Ionicons name="refresh-outline" size={15} color="#FFF" style={{ marginRight: 5 }} />
+                <Text style={s.retryText}>Provo perseri</Text>
+              </TouchableOpacity>
+            </Animated.View>
+          )}
+        </View>
+
+        {/* ── Channel info ───────────────────────── */}
+        <View style={[s.channelSection, { paddingHorizontal: spacing.lg }]}>
+          <View style={s.channelRow}>
+            <View style={[s.channelIcon, { backgroundColor: colors.accent + '15', borderRadius: radius.md }]}>
+              <Ionicons name="tv" size={20} color={colors.accent} />
+            </View>
+            <View style={{ flex: 1, marginLeft: spacing.md }}>
+              <Text style={[typography.h3, { color: dark ? '#FFF' : colors.text }]}>
+                TVA News
+              </Text>
+              <View style={s.channelMeta}>
+                <View style={s.statusPill}>
+                  <Animated.View style={[s.statusDot, dotStyle]} />
+                  <Text style={s.statusText}>DREJTPERDREJT</Text>
+                </View>
+                <Equalizer color={colors.accent} />
               </View>
-              <Text style={st.channelSub}>24/7</Text>
             </View>
           </View>
-          <Equalizer color="#E31E24" />
-        </View>
 
-        {/* Meta */}
-        <View style={st.metaRow}>
-          {[
-            { icon: 'videocam-outline' as const, text: 'Drejtperdrejte' },
-            { icon: 'earth-outline' as const, text: 'Shqiperi' },
-            { icon: 'language-outline' as const, text: 'Shqip' },
-          ].map((m, i) => (
-            <React.Fragment key={m.text}>
-              {i > 0 && <View style={st.metaDivDot} />}
-              <Ionicons name={m.icon} size={14} color="rgba(255,255,255,0.35)" />
-              <Text style={st.metaText}>{m.text}</Text>
-            </React.Fragment>
-          ))}
-        </View>
-
-        {/* Divider */}
-        <View style={st.divider} />
-
-        {/* Quick nav */}
-        <View style={st.navRow}>
-          {[
-            { icon: 'home-outline' as const, label: 'Ballina', tab: '/' },
-            { icon: 'grid-outline' as const, label: 'Tema', tab: '/categories' },
-            { icon: 'search-outline' as const, label: 'Kerko', tab: '/search' },
-            { icon: 'bookmark-outline' as const, label: 'Ruajtur', tab: '/bookmarks' },
-          ].map((item) => (
-            <TouchableOpacity
-              key={item.label}
-              onPress={() => { router.back(); router.navigate(item.tab); }}
-              activeOpacity={0.7}
-              style={st.navItem}
-            >
-              <View style={st.navCircle}>
-                <Ionicons name={item.icon} size={18} color="#FFF" />
+          {/* Meta tags */}
+          <View style={[s.tagsRow, { marginTop: spacing.md }]}>
+            {['Lajme', 'Shqiperi', 'Drejtperdrejte', '24/7'].map((tag) => (
+              <View
+                key={tag}
+                style={[
+                  s.tag,
+                  {
+                    backgroundColor: dark ? 'rgba(255,255,255,0.06)' : colors.surface,
+                    borderRadius: radius.sm,
+                  },
+                ]}
+              >
+                <Text style={[typography.label, { color: dark ? 'rgba(255,255,255,0.5)' : colors.textSecondary }]}>
+                  {tag}
+                </Text>
               </View>
-              <Text style={st.navLabel}>{item.label}</Text>
-            </TouchableOpacity>
-          ))}
+            ))}
+          </View>
         </View>
-      </View>
+
+        {/* ── Divider ────────────────────────────── */}
+        <View
+          style={{
+            height: StyleSheet.hairlineWidth,
+            backgroundColor: dark ? 'rgba(255,255,255,0.06)' : colors.borderLight,
+            marginHorizontal: spacing.lg,
+            marginVertical: spacing.lg,
+          }}
+        />
+
+        {/* ── Trending news ──────────────────────── */}
+        <View style={{ paddingHorizontal: spacing.lg, marginBottom: spacing.md }}>
+          <View style={s.sectionHeader}>
+            <Ionicons name="flame" size={16} color={colors.accent} />
+            <Text
+              style={[
+                typography.h3,
+                { color: dark ? '#FFF' : colors.text, marginLeft: spacing.sm, fontSize: 15 },
+              ]}
+            >
+              Lajmet e fundit
+            </Text>
+          </View>
+        </View>
+
+        {trendingPosts && trendingPosts.length > 0 ? (
+          trendingPosts.map((post) => (
+            <PostCard key={post.id} post={post} />
+          ))
+        ) : (
+          <View style={{ paddingVertical: spacing.xxl, alignItems: 'center' }}>
+            <ActivityIndicator color={colors.accent} />
+          </View>
+        )}
+      </ScrollView>
     </View>
   );
 }
 
-const st = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#08080A' },
+const s = StyleSheet.create({
+  screen: { flex: 1 },
 
-  // Top bar
-  topBar: {
+  // Header
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 14,
     paddingBottom: 10,
-    backgroundColor: '#08080A',
+    backgroundColor: '#111',
   },
-  topBtn: {
-    width: 36, height: 36, borderRadius: 18,
+  headerBtn: {
+    width: 34, height: 34, borderRadius: 17,
     backgroundColor: 'rgba(255,255,255,0.1)',
     alignItems: 'center', justifyContent: 'center',
   },
-  topRight: { flexDirection: 'row', alignItems: 'center' },
+  headerCenter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerTitle: {
+    color: '#FFF', fontFamily: hurme4.bold, fontSize: 15, marginRight: 8,
+  },
+  headerRight: { flexDirection: 'row', alignItems: 'center' },
   livePill: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#E31E24', borderRadius: 5,
-    paddingHorizontal: 10, paddingVertical: 4,
+    backgroundColor: '#E31E24', borderRadius: 4,
+    paddingHorizontal: 7, paddingVertical: 3,
   },
-  liveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#FFF', marginRight: 5 },
-  liveLabel: { color: '#FFF', fontFamily: hurme4.bold, fontSize: 10, letterSpacing: 1 },
+  liveDot: { width: 5, height: 5, borderRadius: 2.5, backgroundColor: '#FFF', marginRight: 4 },
+  liveLabel: { color: '#FFF', fontFamily: hurme4.bold, fontSize: 9, letterSpacing: 0.8 },
 
   // Video
   videoWrap: { width: SCREEN_W, height: VIDEO_H, backgroundColor: '#000' },
@@ -264,7 +289,7 @@ const st = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
     alignItems: 'center', justifyContent: 'center',
-    backgroundColor: 'rgba(0,0,0,0.65)',
+    backgroundColor: 'rgba(0,0,0,0.6)',
   },
   bufferText: { color: 'rgba(255,255,255,0.45)', fontFamily: hurme4.regular, fontSize: 11, marginTop: 10 },
   errorTitle: { color: 'rgba(255,255,255,0.8)', fontFamily: hurme4.semiBold, fontSize: 14, marginTop: 12, textAlign: 'center', paddingHorizontal: 30 },
@@ -275,56 +300,23 @@ const st = StyleSheet.create({
   },
   retryText: { color: '#FFF', fontFamily: hurme4.semiBold, fontSize: 12 },
 
-  // Panel
-  panel: { flex: 1, paddingHorizontal: 20, paddingTop: 22, overflow: 'hidden' },
-  glow: {
-    position: 'absolute', top: -80, alignSelf: 'center',
-    width: 220, height: 220, borderRadius: 110,
-    backgroundColor: '#E31E24',
-  },
-
-  // Channel card
-  channelCard: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: 14, padding: 14,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
-  },
-  logoBox: {
-    width: 48, height: 48, borderRadius: 12,
-    backgroundColor: 'rgba(227,30,36,0.15)',
-    alignItems: 'center', justifyContent: 'center',
-  },
-  channelName: { color: '#FFF', fontFamily: hurme4.bold, fontSize: 16 },
-  statusRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
+  // Channel
+  channelSection: { paddingTop: 16 },
+  channelRow: { flexDirection: 'row', alignItems: 'center' },
+  channelIcon: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
+  channelMeta: { flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 8 },
   statusPill: {
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: '#E31E24', borderRadius: 3,
     paddingHorizontal: 5, paddingVertical: 2,
   },
   statusDot: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#FFF', marginRight: 3 },
-  statusLabel: { color: '#FFF', fontFamily: hurme4.bold, fontSize: 7, letterSpacing: 0.5 },
-  channelSub: { color: 'rgba(255,255,255,0.35)', fontFamily: hurme4.regular, fontSize: 10, marginLeft: 8 },
+  statusText: { color: '#FFF', fontFamily: hurme4.bold, fontSize: 7, letterSpacing: 0.5 },
 
-  // Meta
-  metaRow: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    marginTop: 18,
-  },
-  metaText: { color: 'rgba(255,255,255,0.35)', fontFamily: hurme4.regular, fontSize: 11, marginLeft: 4 },
-  metaDivDot: { width: 3, height: 3, borderRadius: 1.5, backgroundColor: 'rgba(255,255,255,0.15)', marginHorizontal: 10 },
+  // Tags
+  tagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  tag: { paddingHorizontal: 8, paddingVertical: 4 },
 
-  // Divider
-  divider: { height: StyleSheet.hairlineWidth, backgroundColor: 'rgba(255,255,255,0.06)', marginVertical: 18 },
-
-  // Nav
-  navRow: { flexDirection: 'row', justifyContent: 'space-around' },
-  navItem: { alignItems: 'center' },
-  navCircle: {
-    width: 46, height: 46, borderRadius: 23,
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
-    alignItems: 'center', justifyContent: 'center',
-  },
-  navLabel: { color: 'rgba(255,255,255,0.35)', fontFamily: hurme4.regular, fontSize: 10, marginTop: 6 },
+  // Section
+  sectionHeader: { flexDirection: 'row', alignItems: 'center' },
 });
