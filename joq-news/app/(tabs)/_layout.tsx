@@ -110,8 +110,10 @@ export default function TabsLayout() {
         },
         tabBarItemStyle: {
           height: 54,
-          justifyContent: 'center',
+          justifyContent: 'flex-end',
           alignItems: 'center',
+          paddingTop: 6,
+          paddingBottom: 2,
         },
       }}
     >
@@ -142,7 +144,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     width: 62,
-    height: 44,
+    height: 40,
     borderRadius: 12,
     overflow: 'hidden',
   },
