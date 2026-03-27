@@ -5,6 +5,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  AppState,
   Dimensions,
   ScrollView,
   StatusBar,
@@ -87,12 +88,20 @@ export default function LiveScreen() {
 
   const dotStyle = useAnimatedStyle(() => ({ opacity: pulse.value }));
 
-  // Stop video when navigating away, resume when coming back
+  // Stop video when navigating away or app goes to background
   useFocusEffect(
     useCallback(() => {
       videoRef.current?.playAsync();
+
+      const sub = AppState.addEventListener('change', (state) => {
+        if (state !== 'active') {
+          videoRef.current?.pauseAsync();
+        }
+      });
+
       return () => {
         videoRef.current?.pauseAsync();
+        sub.remove();
       };
     }, []),
   );
@@ -148,43 +157,44 @@ export default function LiveScreen() {
         </View>
       </View>
 
+      {/* ── Video (outside ScrollView so native controls work) ── */}
+      <View style={s.videoWrap}>
+        <Video
+          ref={videoRef}
+          source={{ uri: LIVE_URL }}
+          style={s.video}
+          resizeMode={ResizeMode.CONTAIN}
+          shouldPlay
+          useNativeControls
+          isMuted={muted}
+          isLooping={false}
+          onPlaybackStatusUpdate={onStatus}
+          onError={() => setError(true)}
+        />
+
+        {buffering && !error && (
+          <Animated.View entering={FadeIn} style={s.overlay} pointerEvents="none">
+            <ActivityIndicator size="large" color="#FFF" />
+            <Text style={s.bufferText}>Duke lidhur transmetimin...</Text>
+          </Animated.View>
+        )}
+
+        {error && (
+          <Animated.View entering={FadeIn} style={s.overlay}>
+            <Ionicons name="cloud-offline-outline" size={36} color="rgba(255,255,255,0.7)" />
+            <Text style={s.errorTitle}>Transmetimi nuk eshte i disponueshem</Text>
+            <TouchableOpacity onPress={retry} activeOpacity={0.7} style={s.retryBtn}>
+              <Ionicons name="refresh-outline" size={15} color="#FFF" style={{ marginRight: 5 }} />
+              <Text style={s.retryText}>Provo perseri</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        )}
+      </View>
+
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: spacing.massive + 40 }}
       >
-        {/* ── Video ──────────────────────────────── */}
-        <View style={s.videoWrap}>
-          <Video
-            ref={videoRef}
-            source={{ uri: LIVE_URL }}
-            style={s.video}
-            resizeMode={ResizeMode.CONTAIN}
-            shouldPlay
-            useNativeControls
-            isMuted={muted}
-            isLooping={false}
-            onPlaybackStatusUpdate={onStatus}
-            onError={() => setError(true)}
-          />
-
-          {buffering && !error && (
-            <Animated.View entering={FadeIn} style={s.overlay}>
-              <ActivityIndicator size="large" color="#FFF" />
-              <Text style={s.bufferText}>Duke lidhur transmetimin...</Text>
-            </Animated.View>
-          )}
-
-          {error && (
-            <Animated.View entering={FadeIn} style={s.overlay}>
-              <Ionicons name="cloud-offline-outline" size={36} color="rgba(255,255,255,0.7)" />
-              <Text style={s.errorTitle}>Transmetimi nuk eshte i disponueshem</Text>
-              <TouchableOpacity onPress={retry} activeOpacity={0.7} style={s.retryBtn}>
-                <Ionicons name="refresh-outline" size={15} color="#FFF" style={{ marginRight: 5 }} />
-                <Text style={s.retryText}>Provo perseri</Text>
-              </TouchableOpacity>
-            </Animated.View>
-          )}
-        </View>
 
         {/* ── Status bar below video ────────────── */}
         <View style={[s.statusBar, { paddingHorizontal: spacing.lg }]}>
