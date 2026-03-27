@@ -135,6 +135,13 @@ export default function TabsLayout() {
           }}
         />
       ))}
+      {/* Live screen — visible as a tab page but hidden from the tab bar */}
+      <Tabs.Screen
+        name="live"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }

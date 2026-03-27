@@ -27,10 +27,10 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { PostCard } from '../src/components/cards/PostCard';
-import { useTrendingPosts } from '../src/hooks/useTrendingPosts';
-import { useTheme } from '../src/theme';
-import { hurme4 } from '../src/theme/typography';
+import { PostCard } from '../../src/components/cards/PostCard';
+import { useTrendingPosts } from '../../src/hooks/useTrendingPosts';
+import { useTheme } from '../../src/theme';
+import { hurme4 } from '../../src/theme/typography';
 
 const LIVE_URL = 'https://live.tvanews.com/live/tvanews/play.m3u8';
 const SCREEN_W = Dimensions.get('window').width;

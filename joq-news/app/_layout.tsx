@@ -117,10 +117,6 @@ function AppContent() {
             name="category/[id]"
             options={{ animation: 'slide_from_right' }}
           />
-          <Stack.Screen
-            name="live"
-            options={{ animation: 'slide_from_bottom' }}
-          />
         </Stack>
         {showSplash && <AnimatedSplash onFinish={handleSplashFinish} />}
       </View>
