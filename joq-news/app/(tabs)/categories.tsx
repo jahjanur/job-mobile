@@ -14,6 +14,7 @@ import {
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import Svg, { Path } from 'react-native-svg';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
@@ -148,6 +149,39 @@ export default function CategoriesScreen() {
           </Animated.View>
         </TouchableOpacity>
 
+        {/* ── KAPE banner ──────────────────────── */}
+        <TouchableOpacity
+          onPress={() => Linking.openURL('https://kape.net')}
+          activeOpacity={0.85}
+          style={{ marginHorizontal: spacing.lg, marginTop: spacing.lg }}
+        >
+          <LinearGradient
+            colors={['#1E3A5F', '#2563EB', '#3B82F6']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={[st.kapeBanner, { borderRadius: radius.xl }]}
+          >
+            <View style={[st.bgCircle, { width: 120, height: 120, top: -30, right: 40, backgroundColor: 'rgba(255,255,255,0.05)' }]} />
+            <View style={[st.bgCircle, { width: 80, height: 80, bottom: -20, left: -10, backgroundColor: 'rgba(255,255,255,0.04)' }]} />
+            <View style={st.kapeRow}>
+              <View style={{ flex: 1 }}>
+                <Svg width={120} height={36} viewBox="0 0 200 60">
+                  <Path d="M58.2,10.8c-0.7,0.7-1.3,1.5-2.1,2.1c-5,4.1-10,8.2-15.1,12.2c-1,0.8-1.1,1.3-0.3,2.4c5.7,6.8,11.3,13.6,16.9,20.4c0.3,0.3,0.5,0.7,1,1.3c-3.2,0-6,0-8.9,0c-0.4,0-0.8-0.5-1.1-0.8c-4.5-5.4-8.9-10.8-13.3-16.3c-0.8-1-1.3-1-2.3-0.2c-3.9,3.1-3.9,3-3.9,7.9c0,2.6,0,5.2,0,7.8c0,0.5,0,1,0,1.6c-2.6,0-5,0-7.6,0c0-12.8,0-25.5,0-38.3c2.5,0,5,0,7.4,0c0.1,0.6,0.2,1.1,0.2,1.7c0,4.3,0,8.6,0,12.9c0,0.4,0,0.9,0,1.7c0.7-0.5,1.1-0.7,1.4-1c4.6-3.8,9.2-7.6,13.8-11.5c1.5-1.2,2.9-2.6,4.4-3.8C52,10.8,55.1,10.8,58.2,10.8z" fill="#FFF" />
+                  <Path d="M182.3,49.2c-10.6,0-21.1,0-31.8,0c0-0.6-0.1-1-0.1-1.5c0-11.8,0-23.7,0-35.5c0-0.5,0.1-0.9,0.2-1.4c10.6,0,21.2,0,31.7,0c0,1.6,0,3.2,0,4.8c-7.3,0-14.7,0-22,0c-2,0-2,0-2,2.1c0,2.6,0,5.2,0,7.8c0,2,0,2,1.9,2c5.8,0,11.5,0,17.3,0c3.5,0,2.9-0.4,3,2.9c0,1.8,0,1.8-1.9,1.8c-6.2,0-12.5,0-18.7,0c-1.2,0-1.6,0.3-1.6,1.5c0.1,3,0.1,6,0,8.9c0,1.4,0.4,1.8,1.8,1.8c7-0.1,14,0,21,0c0.4,0,0.8,0.1,1.3,0.1C182.3,46.1,182.3,47.7,182.3,49.2z" fill="#FFF" />
+                  <Path d="M131.2,10.8c0.6,0.2,1.3,0.4,1.9,0.5c3.3,0.5,6.4,1.6,8.9,3.8c4.2,3.7,4.3,10.4,0.2,14.3c-3.5,3.4-7.9,4.2-12.5,4.4c-3.5,0.1-7,0.1-10.4,0c-1.2,0-1.6,0.4-1.6,1.6c0.1,4.1,0,8.2,0,12.4c0,1.1-0.3,1.5-1.5,1.5c-2-0.1-4,0-6.1,0c0-0.5-0.1-0.9-0.1-1.3c0-11.9,0-23.9,0-35.8c0-0.4,0.1-0.8,0.1-1.3C117.2,10.8,124.2,10.8,131.2,10.8z M117.8,22.3c0,1.8-0.1,3.6,0,5.4c0,0.4,0.6,1.2,1,1.2c4.3,0,8.7-0.1,13-0.4c2-0.1,3.6-1.2,4.7-2.8c2.5-3.8,0.3-8.9-4.5-9.5c-4.4-0.6-8.8-0.4-13.3-0.4c-0.3,0-0.9,0.7-1,1.2C117.7,18.7,117.8,20.5,117.8,22.3z" fill="#FFF" />
+                  <Path d="M90,10.8c-0.5,1.3-1,2.6-1.6,3.8c-4.3,8.9-8.7,17.9-13.1,26.8c-1.1,2.3-2.2,4.5-3.3,6.8c-0.2,0.4-0.7,0.9-1,1c-2.9,0.1-5.8,0-9,0c0.8-1.7,1.4-3.1,2.1-4.6C67.1,38.4,70,32.2,73,26c2.2-4.5,4.5-9,6.7-13.5c0.3-0.5,0.4-1.1,0.6-1.7C83.5,10.8,86.7,10.8,90,10.8z" fill="#FFF" />
+                  <Path d="M108.3,47.6c-1.8,0.5-3.6,1-5.5,1.3c-7.6,1.3-14-2.2-17.2-9.2c-1.1-2.4-2.1-4.9-4.4-6.5c-0.9-0.6-0.5-1.2,0.4-1.5c1.9-0.6,3.6,0.1,5,1.3c0.9,0.8,1.6,1.9,2.4,2.8c0.7,0.9,1.4,1.9,2.8,1.6c1.3-0.3,1.9-1.4,2.2-2.6c0.9-4.1,0.5-8-1.6-11.6c-0.8-1.3-1.7-2.6-2.4-4c-0.3-0.6-0.4-1.6-0.1-2c0.7-0.8,1.5-0.2,2.1,0.4c3.4,3,6,6.5,7.4,10.8c0.4,1.1,0.4,2.4,0.5,3.6c0.1,1.5,0.2,2.9,0.2,4.4c0.1,4.9,3,7.8,7,9.9c0.4,0.2,0.9,0.4,1.4,0.7C108.3,47.2,108.3,47.4,108.3,47.6z" fill="#FFF" />
+                  <Path d="M93,32.8c-1.3-1-2.5-1.7-3.5-2.7c-1.1-1.1-0.9-1.6,0.6-2.1c-0.7-0.7-1.4-1.4-2-2.1c-0.2-0.3-0.2-0.8-0.2-1.1c0.4-0.1,0.9-0.3,1.3-0.2c0.8,0.3,1.6,0.8,2.6,0.9c-0.6-0.4-1.2-0.8-1.7-1.2c-1-0.8-1.9-1.6-2.8-2.4c-0.2-0.2-0.1-0.8-0.2-1.3c0.4,0,0.9-0.2,1.3-0.1c2.1,0.8,3.4,2.4,3.8,4.4c0.5,2.1,0.7,4.3,1,6.5C93.2,31.7,93.1,32.1,93,32.8z" fill="#FFF" />
+                </Svg>
+                <Text style={st.kapeSub}>Emisioni i mengjesit</Text>
+              </View>
+              <View style={st.kapeArrow}>
+                <Ionicons name="open-outline" size={18} color="rgba(255,255,255,0.6)" />
+              </View>
+            </View>
+          </LinearGradient>
+        </TouchableOpacity>
+
         {/* ── Category groups ────────────────────── */}
         {CATEGORY_GROUPS.map((group) => {
           const meta = GROUP_META[group.title] ?? GROUP_META['Te tjera'];
@@ -186,8 +220,8 @@ export default function CategoriesScreen() {
                   },
                 ]}
               >
-                {group.entries.map((entry, i) => {
-                  const isLast = i === group.entries.length - 1;
+                {group.entries.filter((e) => e.slug !== 'kape').map((entry, i, arr) => {
+                  const isLast = i === arr.length - 1;
                   const isLive = entry.slug === 'live';
                   const isExternal = !!entry.externalUrl;
                   const desc = CAT_DESC[entry.slug];
@@ -321,4 +355,14 @@ const st = StyleSheet.create({
     paddingHorizontal: 6, paddingVertical: 3,
   },
   externalText: { fontFamily: hurme4.bold, fontSize: 9, letterSpacing: 0.5 },
+
+  // KAPE
+  kapeBanner: { height: 90, padding: 18, overflow: 'hidden' },
+  kapeRow: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  kapeSub: { color: 'rgba(255,255,255,0.55)', fontFamily: hurme4.regular, fontSize: 11, marginTop: 6 },
+  kapeArrow: {
+    width: 40, height: 40, borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    alignItems: 'center', justifyContent: 'center',
+  },
 });
