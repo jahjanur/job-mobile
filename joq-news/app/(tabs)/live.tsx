@@ -1,8 +1,9 @@
 /**
  * Live TV — TVA News live stream with trending news feed below.
+ * Uses expo-video (VideoView) instead of expo-av.
  */
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   AppState,
@@ -15,7 +16,7 @@ import {
 } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
-import { Audio, ResizeMode, Video, type AVPlaybackStatus } from 'expo-av';
+import { useVideoPlayer, VideoView } from 'expo-video';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
@@ -27,7 +28,6 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
-
 import Svg, { Path } from 'react-native-svg';
 
 import { PostCard } from '../../src/components/cards/PostCard';
@@ -68,11 +68,8 @@ export default function LiveScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { colors, spacing, radius, typography, dark } = useTheme();
-  const videoRef = useRef<Video>(null);
 
-  const [buffering, setBuffering] = useState(true);
   const [error, setError] = useState(false);
-  const [muted, setMuted] = useState(false);
 
   const { data: trendingPosts } = useTrendingPosts({ limit: 10 });
 
@@ -82,47 +79,41 @@ export default function LiveScreen() {
     pulse.value = withRepeat(
       withTiming(0.3, { duration: 700, easing: Easing.inOut(Easing.ease) }), -1, true,
     );
-    Audio.setAudioModeAsync({ playsInSilentModeIOS: true, staysActiveInBackground: false });
-
   }, []);
 
   const dotStyle = useAnimatedStyle(() => ({ opacity: pulse.value }));
 
-  // Stop video when navigating away or app goes to background
+  // Create video player
+  const player = useVideoPlayer(LIVE_URL, (p) => {
+    p.loop = false;
+    p.play();
+  });
+
+  // Pause/play on focus/blur and app background
   useFocusEffect(
     useCallback(() => {
-      videoRef.current?.playAsync();
+      player.play();
 
       const sub = AppState.addEventListener('change', (state) => {
         if (state !== 'active') {
-          videoRef.current?.pauseAsync();
+          player.pause();
+        } else {
+          player.play();
         }
       });
 
       return () => {
-        videoRef.current?.pauseAsync();
+        player.pause();
         sub.remove();
       };
-    }, []),
+    }, [player]),
   );
 
-  const onStatus = useCallback((s: AVPlaybackStatus) => {
-    if (!s.isLoaded) { if (s.error) { setError(true); setBuffering(false); } return; }
-    setBuffering(s.isBuffering);
+  const handleRetry = useCallback(() => {
     setError(false);
-  }, []);
-
-  const retry = useCallback(async () => {
-    setError(false); setBuffering(true);
-    try {
-      await videoRef.current?.unloadAsync();
-      await videoRef.current?.loadAsync({ uri: LIVE_URL }, { shouldPlay: true });
-    } catch { setError(true); }
-  }, []);
-
-  const goFullscreen = useCallback(() => {
-    videoRef.current?.presentFullscreenPlayer();
-  }, []);
+    player.replace(LIVE_URL);
+    player.play();
+  }, [player]);
 
   return (
     <View style={[s.screen, { backgroundColor: dark ? '#08080A' : colors.background }]}>
@@ -148,42 +139,26 @@ export default function LiveScreen() {
         </View>
 
         <View style={s.headerSide}>
-          <TouchableOpacity onPress={() => setMuted(!muted)} activeOpacity={0.6} style={s.headerBtn}>
-            <Ionicons name={muted ? 'volume-mute' : 'volume-high'} size={18} color="#FFF" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={goFullscreen} activeOpacity={0.6} style={[s.headerBtn, { marginLeft: 6 }]}>
+          <TouchableOpacity onPress={() => router.back()} activeOpacity={0.6} style={s.headerBtn}>
             <Ionicons name="expand" size={18} color="#FFF" />
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* ── Video (outside ScrollView so native controls work) ── */}
+      {/* ── Video (outside ScrollView) ─────────── */}
       <View style={s.videoWrap}>
-        <Video
-          ref={videoRef}
-          source={{ uri: LIVE_URL }}
+        <VideoView
+          player={player}
           style={s.video}
-          resizeMode={ResizeMode.CONTAIN}
-          shouldPlay
-          useNativeControls
-          isMuted={muted}
-          isLooping={false}
-          onPlaybackStatusUpdate={onStatus}
-          onError={() => setError(true)}
+          contentFit="contain"
+          nativeControls
         />
-
-        {buffering && !error && (
-          <Animated.View entering={FadeIn} style={s.overlay} pointerEvents="none">
-            <ActivityIndicator size="large" color="#FFF" />
-            <Text style={s.bufferText}>Duke lidhur transmetimin...</Text>
-          </Animated.View>
-        )}
 
         {error && (
           <Animated.View entering={FadeIn} style={s.overlay}>
             <Ionicons name="cloud-offline-outline" size={36} color="rgba(255,255,255,0.7)" />
             <Text style={s.errorTitle}>Transmetimi nuk eshte i disponueshem</Text>
-            <TouchableOpacity onPress={retry} activeOpacity={0.7} style={s.retryBtn}>
+            <TouchableOpacity onPress={handleRetry} activeOpacity={0.7} style={s.retryBtn}>
               <Ionicons name="refresh-outline" size={15} color="#FFF" style={{ marginRight: 5 }} />
               <Text style={s.retryText}>Provo perseri</Text>
             </TouchableOpacity>
@@ -195,7 +170,6 @@ export default function LiveScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: spacing.massive + 40 }}
       >
-
         {/* ── Status bar below video ────────────── */}
         <View style={[s.statusBar, { paddingHorizontal: spacing.lg }]}>
           <View style={s.statusPill}>
@@ -276,13 +250,6 @@ const s = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.1)',
     alignItems: 'center', justifyContent: 'center',
   },
-  livePill: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#E31E24', borderRadius: 4,
-    paddingHorizontal: 7, paddingVertical: 3,
-  },
-  liveDot: { width: 5, height: 5, borderRadius: 2.5, backgroundColor: '#FFF', marginRight: 4 },
-  liveLabel: { color: '#FFF', fontFamily: hurme4.bold, fontSize: 9, letterSpacing: 0.8 },
 
   // Video
   videoWrap: { width: SCREEN_W, height: VIDEO_H, backgroundColor: '#000' },
@@ -294,7 +261,6 @@ const s = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     backgroundColor: 'rgba(0,0,0,0.6)',
   },
-  bufferText: { color: 'rgba(255,255,255,0.45)', fontFamily: hurme4.regular, fontSize: 11, marginTop: 10 },
   errorTitle: { color: 'rgba(255,255,255,0.8)', fontFamily: hurme4.semiBold, fontSize: 14, marginTop: 12, textAlign: 'center', paddingHorizontal: 30 },
   retryBtn: {
     flexDirection: 'row', alignItems: 'center',
