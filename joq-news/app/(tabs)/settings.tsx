@@ -355,7 +355,19 @@ export default function SettingsScreen() {
     );
   };
 
-  const openLink = (url: string) => Linking.openURL(url);
+  const openLink = async (url: string) => {
+    try {
+      const canOpen = await Linking.canOpenURL(url);
+      if (canOpen) {
+        await Linking.openURL(url);
+      } else {
+        // Fallback to main website
+        await Linking.openURL('https://joq-albania.com');
+      }
+    } catch {
+      await Linking.openURL('https://joq-albania.com');
+    }
+  };
 
   const switchColors = {
     false: colors.border,
