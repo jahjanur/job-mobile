@@ -495,14 +495,22 @@ export default function SettingsScreen() {
             value={notificationsEnabled}
             onValueChange={async (enabled) => {
               if (enabled) {
-                const { registerForPushNotifications } = await import(
-                  '../../src/services/notifications'
-                );
-                const token = await registerForPushNotifications();
-                if (!token) {
+                try {
+                  const { registerForPushNotifications } = await import(
+                    '../../src/services/notifications'
+                  );
+                  const token = await registerForPushNotifications();
+                  if (!token) {
+                    Alert.alert(
+                      'Njoftimet',
+                      'Njoftimet nuk mund te aktivizohen tani. Sigurohuni qe keni lejuar njoftimet ne cilesime.',
+                    );
+                    return;
+                  }
+                } catch (e) {
                   Alert.alert(
-                    'Lejet',
-                    'Ju duhet të lejoni njoftimet në cilësimet e pajisjes.',
+                    'Njoftimet',
+                    'Ndodhi nje gabim gjate aktivizimit te njoftime. Provoni me vone.',
                   );
                   return;
                 }
